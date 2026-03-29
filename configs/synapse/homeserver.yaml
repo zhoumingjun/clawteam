@@ -1,0 +1,71 @@
+# Synapse Homeserver Configuration for Claw Team
+# Generated for MVP testing
+
+# Server identity
+server_name: "localhost"
+server_notices_channel:
+  enabled: false
+
+# Database configuration
+database:
+  name: "sqlite3"
+  args:
+    database: "/data/homeserver.db"
+
+# Event retention
+retention:
+  enabled: false
+
+# Listeners
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: false
+    bind_addresses:
+      - "0.0.0.0"
+    resources:
+      - compress: true
+        contexts:
+          - client
+      - compress: false
+        contexts:
+          - federation
+
+# Authentication
+password_config:
+  enabled: true
+ pepper: ""
+
+# Registration
+enable_registration: true
+registration_shared_secret: "a-secret-key-change-in-production"
+
+# Metrics
+enable_metrics: false
+report_stats: false
+
+# API Configuration
+api_throttling:
+  enabled: true
+  default_delay: 200
+  max_delay: 2000
+  burst_count: 10
+
+# Auto使用 ACME (Let's Encrypt)
+ ACME:
+   enabled: false
+
+# Media
+max_upload_size: "10M"
+max_image_payload_size: "10M"
+dynamic_thumbnails: false
+
+# URL previews
+url_preview_enabled: false
+
+# Room defaults
+default_room_version: "11"
+# Minimum room version that clients must support (set high for MVP simplicity)
+# Clients using any version below this will be rejected
+# minimum_core_definition_version: "11"
