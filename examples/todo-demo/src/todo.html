@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo Demo - Claw Team</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .todo-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .main-content {
+            padding: 24px 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-add {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-add:active {
+            transform: translateY(0);
+        }
+
+        .todo-list {
+            list-style: none;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-item:hover {
+            background: #f7fafc;
+        }
+
+        .todo-item.completed {
+            background: #f0f4f8;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #a0aec0;
+        }
+
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            color: #2d3748;
+        }
+
+        .btn-delete {
+            padding: 6px 12px;
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: #fc8181;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            padding: 16px;
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .stats span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats .count {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        footer {
+            text-align: center;
+            padding: 16px;
+            color: #a0aec0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Todo Demo</h1>
+            <span class="todo-count" id="todoCount">0 items</span>
+        </header>
+
+        <div class="main-content">
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="todoInput"
+                    placeholder="输入新任务..."
+                    autocomplete="off"
+                >
+                <button class="btn-add" id="addBtn">添加</button>
+            </div>
+
+            <ul class="todo-list" id="todoList">
+                <!-- Todo items will be rendered here -->
+            </ul>
+
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-state-icon">📝</div>
+                <p>暂无任务，添加一个吧</p>
+            </div>
+        </div>
+
+        <div class="stats">
+            <span>全部: <span class="count" id="totalCount">0</span></span>
+            <span>已完成: <span class="count" id="completedCount">0</span></span>
+            <span>进行中: <span class="count" id="activeCount">0</span></span>
+        </div>
+
+        <footer>
+            由 Claw Team 虚拟团队开发 | Demo Project
+        </footer>
+    </div>
+
+    <script>
+        // ========================================
+        // Todo App - Claw Team Demo
+        // ========================================
+
+        const STORAGE_KEY = 'clawteam_todos';
+
+        // State
+        let todos = [];
+
+        // DOM Elements
+        const todoInput = document.getElementById('todoInput');
+        const addBtn = document.getElementById('addBtn');
+        const todoList = document.getElementById('todoList');
+        const emptyState = document.getElementById('emptyState');
+        const todoCount = document.getElementById('todoCount');
+        const totalCount = document.getElementById('totalCount');
+        const completedCount = document.getElementById('completedCount');
+        const activeCount = document.getElementById('activeCount');
+
+        // ========================================
+        // Utility Functions
+        // ========================================
+
+        /**
+         * Generate a unique ID
+         * @returns {string}
+         */
+        function generateId() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        /**
+         * Format current timestamp
+         * @returns {string}
+         */
+        function getTimestamp() {
+            return new Date().toISOString();
+        }
+
+        /**
+         * Save todos to localStorage
+         */
+        function saveToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+            } catch (error) {
+                console.error('Failed to save to localStorage:', error);
+            }
+        }
+
+        /**
+         * Load todos from localStorage
+         * @returns {Array}
+         */
+        function loadFromStorage() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (error) {
+                console.error('Failed to load from localStorage:', error);
+                return [];
+            }
+        }
+
+        // ========================================
+        // Todo Operations
+        // ========================================
+
+        /**
+         * Add a new todo
+         * @param {string} text
+         */
+        function addTodo(text) {
+            if (!text || !text.trim()) {
+                return;
+            }
+
+            const todo = {
+                id: generateId(),
+                text: text.trim(),
+                completed: false,
+                createdAt: getTimestamp()
+            };
+
+            todos.push(todo);
+            saveToStorage();
+            render();
+        }
+
+        /**
+         * Delete a todo by ID
+         * @param {string} id
+         */
+        function deleteTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            saveToStorage();
+            render();
+        }
+
+        /**
+         * Toggle todo completion status
+         * @param {string} id
+         */
+        function toggleComplete(id) {
+            todos = todos.map(todo => {
+                if (todo.id === id) {
+                    return { ...todo, completed: !todo.completed };
+                }
+                return todo;
+            });
+            saveToStorage();
+            render();
+        }
+
+        // ========================================
+        // Rendering
+        // ========================================
+
+        /**
+         * Render the todo list
+         */
+        function render() {
+            // Clear current list
+            todoList.innerHTML = '';
+
+            // Show/hide empty state
+            if (todos.length === 0) {
+                emptyState.style.display = 'block';
+                todoList.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                todoList.style.display = 'block';
+
+                // Render each todo
+                todos.forEach(todo => {
+                    const li = createTodoElement(todo);
+                    todoList.appendChild(li);
+                });
+            }
+
+            // Update stats
+            updateStats();
+        }
+
+        /**
+         * Create a todo list item element
+         * @param {Object} todo
+         * @returns {HTMLElement}
+         */
+        function createTodoElement(todo) {
+            const li = document.createElement('li');
+            li.className = `todo-item${todo.completed ? ' completed' : ''}`;
+            li.dataset.id = todo.id;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'todo-checkbox';
+            checkbox.checked = todo.completed;
+            checkbox.onclick = () => toggleComplete(todo.id);
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'todo-text';
+            textSpan.textContent = todo.text;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-delete';
+            deleteBtn.textContent = '删除';
+            deleteBtn.onclick = () => deleteTodo(todo.id);
+
+            li.appendChild(checkbox);
+            li.appendChild(textSpan);
+            li.appendChild(deleteBtn);
+
+            return li;
+        }
+
+        /**
+         * Update statistics
+         */
+        function updateStats() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            const active = total - completed;
+
+            // Update header count
+            todoCount.textContent = `${total} items`;
+
+            // Update stats
+            totalCount.textContent = total;
+            completedCount.textContent = completed;
+            activeCount.textContent = active;
+        }
+
+        // ========================================
+        // Event Handlers
+        // ========================================
+
+        /**
+         * Handle add button click
+         */
+        function handleAdd() {
+            const text = todoInput.value;
+            addTodo(text);
+            todoInput.value = '';
+            todoInput.focus();
+        }
+
+        addBtn.addEventListener('click', handleAdd);
+
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleAdd();
+            }
+        });
+
+        // ========================================
+        // Initialization
+        // ========================================
+
+        function init() {
+            todos = loadFromStorage();
+            render();
+            todoInput.focus();
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
