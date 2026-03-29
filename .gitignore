@@ -1,0 +1,43 @@
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# Docker 卷数据
+volumes/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+
+# Node
+node_modules/
+npm-debug.log
+
+# 测试输出
+outputs/
+coverage/
+
+# OpenSpec
+.openspec/
+
+# Docker
+.docker/
+
+# 临时文件
+tmp/
+temp/
+*.tmp
