@@ -29,6 +29,12 @@ The `.claude/` directory contains:
   - Various installed plugins for different development tasks
 ## Rules
 - Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+- Follow industry best practices for every task:
+  - Docker Compose: official best practices, healthcheck, depends_on with condition: service_healthy
+  - Shell scripts: set -euo pipefail, shellcheck linting
+  - Security: CIS Docker Benchmark, OWASP guidelines
+  - Architecture: 12-Factor App principles
+  - Backup: 3-2-1 rule (3 copies, 2 media, 1 offsite)
 
 
 ## Notes

@@ -47,7 +47,8 @@
 | 1 | SPEC-001: init-project | ✅ 已完成 | 创建目录结构、Makefile、.env.example |
 | 2 | SPEC-002: docker-compose | ✅ 已完成 | d276f8f |
 | 3 | SPEC-003: conduit-matrix | ✅ 已完成 | ab561cc |
-| 4 | SPEC-004: storage-volumes | 待执行 | 依赖 SPEC-001 |
+| 4 | SPEC-004: storage-volumes | ✅ 已完成 | f32205c |
+| 5 | SPEC-005: agent-config-manager | 待执行 | 依赖 SPEC-002 |
 
 ---
 
@@ -84,6 +85,27 @@
 ```
 
 **重要：每个 SPEC 在 apply 前必须经过灵犀审阅**
+
+## 审阅标准
+
+每个任务必须参考业界最佳实践：
+
+| 领域 | 参考标准 |
+|------|----------|
+| Docker Compose | 官方最佳实践、healthcheck、depends_on + condition |
+| Matrix | Conduit vs Synapse API 能力对比 |
+| Shell 脚本 | set -euo pipefail、shellcheck |
+| 架构 | 12-Factor App 原则 |
+| 安全 | CIS Docker Benchmark、OWASP Top 10 |
+| 备份 | 3-2-1 原则 |
+
+## 当前阻塞
+
+SPEC-002（docker-compose）、SPEC-003（conduit-matrix）存在严重问题，需重构：
+1. 密码硬编码
+2. API 不兼容（Synapse vs Conduit）
+3. 缺少 Element Web 服务
+4. 端口暴露未加固
 
 ## 协作约定
 
