@@ -17,14 +17,25 @@
 
 ## 执行计划
 
-### SPEC-001: init-project（进行中）
-- **状态**: 待执行
+### SPEC-001: init-project ✅
+- **状态**: 已完成
 - **负责人**: Claude Code
 - **目标**: 建立项目基础结构
-- **交付物**: 目录结构、Makefile、.env.example
-- **依赖**: 无
+- **交付物**: 目录结构、Makefile、.env.example、.gitignore
+- **提交**: d25a8de - feat: init project structure with Makefile, .env.example, .gitignore
+- **完成时间**: 2026-03-30 02:22
 
-### SPEC-002 ~ SPEC-015（待执行）
+### SPEC-002: docker-compose ✅
+- **状态**: 已完成
+- **提交**: d276f8f
+- **完成时间**: 2026-03-30 02:23
+
+### SPEC-003: conduit-matrix ✅
+- **状态**: 已完成
+- **提交**: ab561cc
+- **完成时间**: 2026-03-30 02:25
+
+### SPEC-004 ~ SPEC-015（待执行）
 按 `docs/execution-plan.md` 执行
 
 ---
@@ -33,9 +44,9 @@
 
 | 序号 | 任务 | 状态 | 备注 |
 |------|------|------|------|
-| 1 | SPEC-001: init-project | 待执行 | 创建目录结构、Makefile、.env.example |
-| 2 | SPEC-002: docker-compose | 待执行 | 依赖 SPEC-001 |
-| 3 | SPEC-003: conduit-matrix | 待执行 | 依赖 SPEC-001 |
+| 1 | SPEC-001: init-project | ✅ 已完成 | 创建目录结构、Makefile、.env.example |
+| 2 | SPEC-002: docker-compose | ✅ 已完成 | d276f8f |
+| 3 | SPEC-003: conduit-matrix | ✅ 已完成 | ab561cc |
 | 4 | SPEC-004: storage-volumes | 待执行 | 依赖 SPEC-001 |
 
 ---
@@ -63,9 +74,21 @@
 
 ---
 
+## OpenSpec 流程
+
+```
+1. Claude Code 提出 SPEC 提案
+2. 灵犀审阅（技术可行性、完整性、合理性）
+3. 如有问题 → 讨论修改
+4. 确认无误 → apply 执行
+```
+
+**重要：每个 SPEC 在 apply 前必须经过灵犀审阅**
+
 ## 协作约定
 
 - 灵犀（我）↔ Claude Code：技术讨论伙伴
-- 我负责监控、讨论、推动
+- 我负责监控、讨论、推动、审阅
 - 重大决策（架构方向）需通知用户
 - 每30分钟向用户同步进展（飞书）
+- 5分钟无响应 → 自行与 Claude Code 讨论决定

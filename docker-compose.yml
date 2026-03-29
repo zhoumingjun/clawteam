@@ -58,7 +58,16 @@ networks:
   clawteam-network:
     driver: bridge
 
+# ============================================
+# 存储卷配置
+# ============================================
+# 注意: volumes/ 目录在 .gitignore 中被排除
+# 备份脚本位于: scripts/volumes/backup.sh
+# 恢复脚本位于: scripts/volumes/restore.sh
+
 volumes:
+  # Conduit Matrix 数据
+  # 备份路径: volumes/conduit-data/
   conduit-data:
     driver: local
     driver_opts:
@@ -66,6 +75,8 @@ volumes:
       o: bind
       device: ${PWD}/volumes/conduit-data
 
+  # OpenClaw Agent 配置
+  # 备份路径: volumes/openclaw-config/
   openclaw-config:
     driver: local
     driver_opts:
@@ -73,6 +84,8 @@ volumes:
       o: bind
       device: ${PWD}/volumes/openclaw-config
 
+  # OpenClaw 运行时数据
+  # 备份路径: volumes/openclaw-data/
   openclaw-data:
     driver: local
     driver_opts:

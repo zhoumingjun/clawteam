@@ -4,7 +4,7 @@
 .env.*.local
 
 # Docker 卷数据
-volumes/
+/volumes/
 
 # macOS
 .DS_Store
