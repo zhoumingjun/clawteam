@@ -1,8 +1,12 @@
 #!/bin/bash
-# Claw Team 烟雾测试
-# 验证所有服务是否正常启动
+# Claw Team 烟雾测试 (MVP 版本)
+# 验证 Synapse + Element Web 服务是否正常启动
 
 set -euo pipefail
+
+# 配置
+SYNAPSE_PORT="${SYNAPSE_PORT:-8008}"
+ELEMENT_PORT="${ELEMENT_PORT:-10001}"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -29,14 +33,14 @@ log_info() {
 }
 
 echo "=========================================="
-echo "Claw Team 烟雾测试"
+echo "Claw Team 烟雾测试 (MVP)"
 echo "=========================================="
 echo ""
 
 # -----------------------------------------------------------------------------
 # Test 1: 检查 Docker 是否可用
 # -----------------------------------------------------------------------------
-log_info "[1/12] 检查 Docker..."
+log_info "[1/8] 检查 Docker..."
 if docker --version > /dev/null 2>&1; then
     log_pass "Docker 可用: $(docker --version | cut -d' ' -f3 | tr -d ',')"
 else
@@ -46,7 +50,7 @@ fi
 # -----------------------------------------------------------------------------
 # Test 2: 检查 docker-compose 是否可用
 # -----------------------------------------------------------------------------
-log_info "[2/12] 检查 docker-compose..."
+log_info "[2/8] 检查 docker-compose..."
 if docker compose version > /dev/null 2>&1; then
     log_pass "docker-compose 可用: $(docker compose version | cut -d' ' -f4 | tr -d ',')"
 else
@@ -56,7 +60,7 @@ fi
 # -----------------------------------------------------------------------------
 # Test 3: 检查 docker-compose 服务状态
 # -----------------------------------------------------------------------------
-log_info "[3/12] 检查服务启动状态..."
+log_info "[3/8] 检查服务启动状态..."
 if docker compose ps | grep -q "Up"; then
     log_pass "至少一个服务已启动"
 else
@@ -64,39 +68,39 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# Test 4: Conduit 健康检查 (HTTP)
+# Test 4: Synapse 健康检查 (HTTP)
 # -----------------------------------------------------------------------------
-log_info "[4/12] 检查 Conduit Matrix 服务..."
-if curl -sf "http://localhost:10000/_matrix/client/versions" > /dev/null 2>&1; then
-    log_pass "Conduit HTTP 端点正常"
+log_info "[4/8] 检查 Synapse Matrix 服务..."
+if curl -sf "http://localhost:${SYNAPSE_PORT}/_matrix/client/versions" > /dev/null 2>&1; then
+    log_pass "Synapse HTTP 端点正常"
 else
-    log_fail "Conduit 不可访问 (http://localhost:10000)"
+    log_fail "Synapse 不可访问 (http://localhost:${SYNAPSE_PORT})"
 fi
 
 # -----------------------------------------------------------------------------
 # Test 5: Element Web 健康检查 (HTTP)
 # -----------------------------------------------------------------------------
-log_info "[5/12] 检查 Element Web..."
-if curl -sf "http://localhost:10001" > /dev/null 2>&1; then
+log_info "[5/8] 检查 Element Web..."
+if curl -sf "http://localhost:${ELEMENT_PORT}" > /dev/null 2>&1; then
     log_pass "Element Web 正常"
 else
-    log_fail "Element Web 不可访问 (http://localhost:10001)"
+    log_fail "Element Web 不可访问 (http://localhost:${ELEMENT_PORT})"
 fi
 
 # -----------------------------------------------------------------------------
-# Test 6: Conduit 容器健康状态
+# Test 6: Synapse 容器健康状态
 # -----------------------------------------------------------------------------
-log_info "[6/12] 检查 Conduit 容器..."
-if docker ps | grep -q "clawteam-conduit.*Up"; then
-    log_pass "Conduit 容器运行中"
+log_info "[6/8] 检查 Synapse 容器..."
+if docker ps | grep -q "clawteam-synapse.*Up"; then
+    log_pass "Synapse 容器运行中"
 else
-    log_fail "Conduit 容器未运行"
+    log_fail "Synapse 容器未运行"
 fi
 
 # -----------------------------------------------------------------------------
 # Test 7: Element 容器健康状态
 # -----------------------------------------------------------------------------
-log_info "[7/12] 检查 Element 容器..."
+log_info "[7/8] 检查 Element 容器..."
 if docker ps | grep -q "clawteam-element.*Up"; then
     log_pass "Element 容器运行中"
 else
@@ -104,64 +108,13 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# Test 8: Manager Agent 容器状态
+# Test 8: Docker 网络检查
 # -----------------------------------------------------------------------------
-log_info "[8/12] 检查 Manager Agent 容器..."
-if docker ps | grep -q "clawteam-manager.*Up"; then
-    log_pass "Manager Agent 容器运行中"
-else
-    log_fail "Manager Agent 容器未运行"
-fi
-
-# -----------------------------------------------------------------------------
-# Test 9: 其他 Agent 容器状态
-# -----------------------------------------------------------------------------
-log_info "[9/12] 检查其他 Agent 容器..."
-ALL_AGENTS_UP=true
-for agent in arch dev qa sre research; do
-    if ! docker ps | grep -q "clawteam-${agent}.*Up"; then
-        log_fail "${agent} Agent 容器未运行"
-        ALL_AGENTS_UP=false
-    fi
-done
-if [ "$ALL_AGENTS_UP" = true ]; then
-    log_pass "所有 Agent 容器运行中 (arch, dev, qa, sre, research)"
-fi
-
-# -----------------------------------------------------------------------------
-# Test 10: OpenClaw Gateway 健康检查 (如果端口 8000 暴露)
-# -----------------------------------------------------------------------------
-log_info "[10/12] 检查 OpenClaw Gateway..."
-# OpenClaw Gateway 可能没有暴露 8000 端口到主机，仅做容器内检查
-if docker exec clawteam-manager curl -sf "http://localhost:8000/health" > /dev/null 2>&1; then
-    log_pass "OpenClaw Gateway 健康"
-else
-    log_info "OpenClaw Gateway 健康检查跳过 (端口未暴露)"
-fi
-
-# -----------------------------------------------------------------------------
-# Test 11: Docker 网络检查
-# -----------------------------------------------------------------------------
-log_info "[11/12] 检查 Docker 网络..."
+log_info "[8/8] 检查 Docker 网络..."
 if docker network inspect clawteam-clawteam-network > /dev/null 2>&1; then
     log_pass "Docker 网络存在"
 else
     log_fail "Docker 网络不存在"
-fi
-
-# -----------------------------------------------------------------------------
-# Test 12: Volume 挂载检查
-# -----------------------------------------------------------------------------
-log_info "[12/12] 检查 Volume 挂载..."
-VOLUMES_OK=true
-for vol in conduit-data openclaw-config openclaw-data; do
-    if ! docker volume inspect clawteam-${vol} > /dev/null 2>&1; then
-        log_fail "Volume ${vol} 不存在"
-        VOLUMES_OK=false
-    fi
-done
-if [ "$VOLUMES_OK" = true ]; then
-    log_pass "所有 Volume 存在"
 fi
 
 # -----------------------------------------------------------------------------
@@ -177,6 +130,11 @@ echo ""
 
 if [ "$TESTS_FAILED" -eq 0 ]; then
     echo -e "${GREEN}所有烟雾测试通过!${NC}"
+    echo ""
+    echo "下一步:"
+    echo "  1. 运行 'bash configs/matrix/init.sh' 初始化用户"
+    echo "  2. 访问 Element Web (http://localhost:${ELEMENT_PORT})"
+    echo "  3. 使用 @human 账号登录并测试"
     exit 0
 else
     echo -e "${RED}部分测试失败，请检查上述问题${NC}"

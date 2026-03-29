@@ -1,29 +1,32 @@
+# Claw Team - MVP Docker Compose
+# 仅包含 Synapse (Matrix 服务器) 和 Element Web
+# Agent 容器将在后续添加
+
 services:
   # ============================================
-  # Conduit Matrix Homeserver
+  # Synapse Matrix Homeserver
   # ============================================
-  conduit:
-    image: matrixdotorg/conduit:latest
-    container_name: clawteam-conduit
+  synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: clawteam-synapse
     restart: unless-stopped
     ports:
-      - "${CONDUIT_PORT:-10000}:6167"
+      - "${SYNAPSE_PORT:-8008}:8008"
     volumes:
-      - conduit-data:/data
+      - synapse-data:/data
     environment:
-      - CONDUIT_SERVER=${CONDUIT_SERVER:-localhost:10000}
-      - CONDUIT_DATABASE_PATH=/data/conduit.db
-      - CONDUIT_PORT=6167
-      - CONDUIT_ALLOW_REGISTRATION=${CONDUIT_ALLOW_REGISTRATION:-false}
-      - RUST_LOG=info
+      - SYNAPSE_SERVER_NAME=${SYNAPSE_SERVER_NAME:-localhost}
+      - SYNAPSE_REGISTRATION_SHARED_SECRET=${SYNAPSE_REGISTRATION_SHARED_SECRET:-a-secret-key-change-in-production}
+      - SYNAPSE_ENABLE_REGISTRATION=${SYNAPSE_ENABLE_REGISTRATION:-true}
+      - SYNAPSE_REPORT_STATS=no
     networks:
       - clawteam-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6167/_matrix/client/versions"]
+      test: ["CMD", "curl", "-f", "http://localhost:8008/_matrix/client/versions"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 30s
 
   # ============================================
   # Element Web (Matrix Client)
@@ -37,147 +40,12 @@ services:
     volumes:
       - element-config:/etc/element:ro
     environment:
-      - SERVER_NAME=${CONDUIT_SERVER:-localhost:10000}
+      - SERVER_NAME=${SYNAPSE_SERVER_NAME:-localhost}
+      - ELEMENT_WEB_URL=http://localhost:${SYNAPSE_PORT:-8008}
     networks:
       - clawteam-network
     depends_on:
-      - conduit
-
-  # ============================================
-  # OpenClaw Agents
-  # ============================================
-
-  # Manager Agent
-  manager:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-manager
-    restart: unless-stopped
-    volumes:
-      - openclaw-config:/openclaw/config
-      - openclaw-data:/openclaw/data
-    environment:
-      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
-      - OPENCLAW_CONFIG_PATH=/openclaw/config
-      - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=http://conduit:6167
-      - AGENT_API_KEY=${MANAGER_API_KEY}
-      - AGENT_ID=manager
-      - AGENT_MODEL=${MANAGER_MODEL:-claude-opus-4-20250514}
-    networks:
-      - clawteam-network
-    depends_on:
-      conduit:
-        condition: service_healthy
-
-  # Arch Agent
-  arch:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-arch
-    restart: unless-stopped
-    volumes:
-      - openclaw-config:/openclaw/config
-      - openclaw-data:/openclaw/data
-    environment:
-      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
-      - OPENCLAW_CONFIG_PATH=/openclaw/config
-      - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=http://conduit:6167
-      - AGENT_API_KEY=${ARCH_API_KEY}
-      - AGENT_ID=arch
-      - AGENT_MODEL=${ARCH_MODEL:-claude-opus-4-20250514}
-    networks:
-      - clawteam-network
-    depends_on:
-      conduit:
-        condition: service_healthy
-
-  # Dev Agent
-  dev:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-dev
-    restart: unless-stopped
-    volumes:
-      - openclaw-config:/openclaw/config
-      - openclaw-data:/openclaw/data
-    environment:
-      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
-      - OPENCLAW_CONFIG_PATH=/openclaw/config
-      - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=http://conduit:6167
-      - AGENT_API_KEY=${DEV_API_KEY}
-      - AGENT_ID=dev
-      - AGENT_MODEL=${DEV_MODEL:-claude-sonnet-4-20250514}
-    networks:
-      - clawteam-network
-    depends_on:
-      conduit:
-        condition: service_healthy
-
-  # QA Agent
-  qa:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-qa
-    restart: unless-stopped
-    volumes:
-      - openclaw-config:/openclaw/config
-      - openclaw-data:/openclaw/data
-    environment:
-      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
-      - OPENCLAW_CONFIG_PATH=/openclaw/config
-      - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=http://conduit:6167
-      - AGENT_API_KEY=${QA_API_KEY}
-      - AGENT_ID=qa
-      - AGENT_MODEL=${QA_MODEL:-claude-sonnet-4-20250514}
-    networks:
-      - clawteam-network
-    depends_on:
-      conduit:
-        condition: service_healthy
-
-  # SRE Agent
-  sre:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-sre
-    restart: unless-stopped
-    volumes:
-      - openclaw-config:/openclaw/config
-      - openclaw-data:/openclaw/data
-    environment:
-      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
-      - OPENCLAW_CONFIG_PATH=/openclaw/config
-      - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=http://conduit:6167
-      - AGENT_API_KEY=${SRE_API_KEY}
-      - AGENT_ID=sre
-      - AGENT_MODEL=${SRE_MODEL:-claude-haiku-4-20250514}
-    networks:
-      - clawteam-network
-    depends_on:
-      conduit:
-        condition: service_healthy
-
-  # Research Agent
-  research:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-research
-    restart: unless-stopped
-    volumes:
-      - openclaw-config:/openclaw/config
-      - openclaw-data:/openclaw/data
-    environment:
-      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
-      - OPENCLAW_CONFIG_PATH=/openclaw/config
-      - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=http://conduit:6167
-      - AGENT_API_KEY=${RESEARCH_API_KEY}
-      - AGENT_ID=research
-      - AGENT_MODEL=${RESEARCH_MODEL:-claude-opus-4-20250514}
-    networks:
-      - clawteam-network
-    depends_on:
-      conduit:
-        condition: service_healthy
+      - synapse
 
 networks:
   clawteam-network:
@@ -188,35 +56,16 @@ networks:
 # ============================================
 # 注意: volumes/ 目录在 .gitignore 中被排除
 # 备份脚本位于: scripts/volumes/backup.sh
-# 恢复脚本位于: scripts/volumes/restore.sh
 
 volumes:
-  # Conduit Matrix 数据
-  # 备份路径: volumes/conduit-data/
-  conduit-data:
+  # Synapse Matrix 数据
+  # 备份路径: volumes/synapse-data/
+  synapse-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/volumes/conduit-data
-
-  # OpenClaw Agent 配置
-  # 备份路径: volumes/openclaw-config/
-  openclaw-config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/volumes/openclaw-config
-
-  # OpenClaw 运行时数据
-  # 备份路径: volumes/openclaw-data/
-  openclaw-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/volumes/openclaw-data
+      device: ${PWD}/volumes/synapse-data
 
   # Element Web 配置
   element-config:

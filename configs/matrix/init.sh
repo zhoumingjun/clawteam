@@ -1,13 +1,13 @@
 #!/bin/bash
-# Conduit Matrix 初始化脚本
+# Synapse Matrix 初始化脚本
 # 使用 Matrix Client-Server API (/_matrix/client/r0/register)
 # 密码从环境变量读取，不硬编码
 
-set -e
+set -euo pipefail
 
 # 配置
-CONDUIT_SERVER=${CONDUIT_SERVER:-http://localhost:10000}
-ADMIN_SECRET=${CONDUIT_ADMIN_SECRET:-}
+SYNAPSE_SERVER=${SYNAPSE_SERVER:-http://localhost:8008}
+ADMIN_SECRET=${SYNAPSE_REGISTRATION_SHARED_SECRET:-}
 
 # 颜色输出
 RED='\033[0;31m'
@@ -27,50 +27,50 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 等待 Conduit 就绪
-wait_for_conduit() {
-    log_info "等待 Conduit 服务就绪..."
+# 等待 Synapse 就绪
+wait_for_synapse() {
+    log_info "等待 Synapse 服务就绪..."
     local max_attempts=30
     local attempt=1
     while [ $attempt -le $max_attempts ]; do
-        if curl -s "$CONDUIT_SERVER/_matrix/client/versions" > /dev/null 2>&1; then
-            log_info "Conduit 服务已就绪"
+        if curl -sf "${SYNAPSE_SERVER}/_matrix/client/versions" > /dev/null 2>&1; then
+            log_info "Synapse 服务已就绪"
             return 0
         fi
         log_info "等待中... ($attempt/$max_attempts)"
         sleep 2
         attempt=$((attempt + 1))
     done
-    log_error "Conduit 服务启动超时"
+    log_error "Synapse 服务启动超时"
     return 1
 }
 
 # 创建 Matrix 用户 (使用标准 Client-Server API)
-# Conduit 不支持自定义 room_id，让服务器自动生成
 create_user() {
-    local username=$1
-    local password=$2
+    local username="$1"
+    local password="$2"
 
-    log_info "创建用户: @$username"
+    log_info "创建用户: @${username}"
 
-    local response=$(curl -s -X POST "$CONDUIT_SERVER/_matrix/client/r0/register" \
+    local response
+    response=$(curl -s -X POST "${SYNAPSE_SERVER}/_matrix/client/r0/register" \
         -H "Content-Type: application/json" \
-        -d '{
-            "auth": {"type": "m.login.dummy"},
-            "username": "'"$username"'",
-            "password": "'"$password"'"
-        }' 2>&1)
+        -d "{
+            \"auth\": {\"type\": \"m.login.dummy\"},
+            \"username\": \"${username}\",
+            \"password\": \"${password}\"
+        }" 2>&1)
 
     if echo "$response" | grep -q "access_token"; then
-        log_info "用户 $username 创建成功"
+        log_info "用户 @${username} 创建成功"
         return 0
     else
         # 尝试不重复创建 (M_USER_IN_USE)
         if echo "$response" | grep -q "M_USER_IN_USE"; then
-            log_warn "用户 $username 已存在，跳过"
+            log_warn "用户 @${username} 已存在，跳过"
             return 0
         fi
-        log_error "用户 $username 创建失败: $response"
+        log_error "用户 @${username} 创建失败: $response"
         return 1
     fi
 }
@@ -78,19 +78,19 @@ create_user() {
 # 主函数
 main() {
     log_info "=========================================="
-    log_info "Claw Team Matrix 初始化"
+    log_info "Claw Team Matrix 初始化 (Synapse)"
     log_info "=========================================="
-    log_info "服务器: $CONDUIT_SERVER"
+    log_info "服务器: ${SYNAPSE_SERVER}"
     log_info ""
 
     # 检查环境变量
-    if [ -z "$MANAGER_PASSWORD" ]; then
+    if [ -z "${MANAGER_PASSWORD:-}" ]; then
         log_warn "MANAGER_PASSWORD 未设置，使用默认值 (仅用于开发)"
         MANAGER_PASSWORD="manager_password"
     fi
 
-    # 等待 Conduit 就绪
-    wait_for_conduit || exit 1
+    # 等待 Synapse 就绪
+    wait_for_synapse || exit 1
 
     log_info ""
     log_info "----------------------------------------"

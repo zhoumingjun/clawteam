@@ -1,36 +1,21 @@
-# Matrix (Conduit) 配置
+# Matrix (Synapse) 配置
 
-本目录包含 Conduit Matrix Homeserver 的配置和初始化脚本。
+本目录包含 Synapse Matrix Homeserver 的配置和初始化脚本。
 
 ## 文件说明
 
 | 文件 | 说明 |
 |------|------|
-| `conduit.yaml` | Conduit 服务配置文件 |
 | `init.sh` | 用户和房间初始化脚本 |
-
-## 配置
-
-### conduit.yaml
-
-主要配置项：
-
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| `server_name` | 服务器名称（域名） | `localhost:10000` |
-| `database_path` | 数据库文件路径 | `/data/conduit.db` |
-| `port` | 服务端口 | `6167` |
-| `allow_registration` | 允许新用户注册 | `false` |
-| `allow_password_login` | 允许密码登录 | `true` |
-| `allow_federation` | 允许跨服务器通信 | `false` |
 
 ## 环境变量
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `CONDUIT_SERVER` | Conduit 服务器地址 | `http://localhost:10000` |
-| `CONDUIT_PORT` | 主机映射端口 | `10000` |
-| `CONDUIT_ALLOW_REGISTRATION` | 允许新用户注册 | `false` |
+| `SYNAPSE_SERVER_NAME` | 服务器名称 | `localhost` |
+| `SYNAPSE_REGISTRATION_SHARED_SECRET` | 注册共享密钥 | `a-secret-key-change-in-production` |
+| `SYNAPSE_ENABLE_REGISTRATION` | 允许新用户注册 | `true` |
+| `SYNAPSE_PORT` | Synapse 端口 | `8008` |
 | `ELEMENT_PORT` | Element Web 端口 | `10001` |
 
 ## 用户密码
@@ -56,7 +41,7 @@ bash configs/matrix/init.sh
 
 ## 使用方法
 
-### 1. 启动 Conduit 服务
+### 1. 启动服务
 
 ```bash
 make up
@@ -69,6 +54,7 @@ make up
 export MANAGER_PASSWORD="your-secure-password"
 export HUMAN_PASSWORD="your-secure-password"
 # ... 设置其他密码
+
 bash configs/matrix/init.sh
 ```
 
@@ -80,33 +66,38 @@ bash configs/matrix/init.sh
 
 ## 安全加固（生产环境）
 
-1. **禁用用户注册**
+1. **修改共享密钥**
    ```bash
-   export CONDUIT_ALLOW_REGISTRATION=false
+   export SYNAPSE_REGISTRATION_SHARED_SECRET="your-secure-secret"
    ```
 
-2. **限制端口访问**
+2. **禁用用户注册**
+   ```bash
+   export SYNAPSE_ENABLE_REGISTRATION=false
+   ```
+
+3. **限制端口访问**
    - 开发环境：暴露在所有接口
    - 生产环境：使用反向代理 + TLS，仅允许特定网络访问
 
-3. **启用联邦（谨慎）**
-   ```yaml
-   allow_federation: true
-   ```
-
 ## 故障排查
 
-### Conduit 无法启动
+### Synapse 无法启动
 
 检查端口是否被占用：
 ```bash
-lsof -i :10000
+lsof -i :8008
+```
+
+查看 Synapse 日志：
+```bash
+docker compose logs synapse
 ```
 
 ### 用户创建失败
 
-确认环境变量已正确设置，且 `CONDUIT_ALLOW_REGISTRATION=true`。
+确认 `SYNAPSE_ENABLE_REGISTRATION=true`。
 
-### 房间创建失败
+### Element Web 无法连接
 
-脚本会自动跳过已存在的房间，这是预期行为。
+确认 `SERVER_NAME` 与 `SYNAPSE_SERVER_NAME` 匹配。
