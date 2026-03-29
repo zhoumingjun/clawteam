@@ -33,6 +33,27 @@ usage() {
     exit 1
 }
 
+# 路径穿越防护：确保路径安全
+sanitize_path() {
+    local path="$1"
+    local realpath
+
+    realpath=$(realpath "$path" 2>/dev/null) || {
+        log_error "路径无效: $path"
+        return 1
+    }
+
+    case "$realpath" in
+        $(pwd)/*)
+            return 0
+            ;;
+        *)
+            log_error "路径穿越检测: $path -> $realpath"
+            return 1
+            ;;
+    esac
+}
+
 # 检查参数
 if [ -z "$1" ]; then
     log_error "请提供备份文件路径"
@@ -45,6 +66,9 @@ if [ ! -f "$BACKUP_FILE" ]; then
     log_error "备份文件不存在: $BACKUP_FILE"
     exit 1
 fi
+
+# 路径安全检查
+sanitize_path "$BACKUP_FILE" || exit 1
 
 log_info "=========================================="
 log_info "Claw Team 恢复"

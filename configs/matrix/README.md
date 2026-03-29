@@ -20,10 +20,39 @@
 | `server_name` | 服务器名称（域名） | `localhost:10000` |
 | `database_path` | 数据库文件路径 | `/data/conduit.db` |
 | `port` | 服务端口 | `6167` |
-| `allow_registration` | 允许新用户注册 | `true` |
-| `registration_shared_secret` | 注册共享密钥（Admin API） | `clawteam-secret-change-me` |
-| `log` | 日志级别 | `info` |
-| `max_request_size` | 最大请求大小（字节） | `20000000` |
+| `allow_registration` | 允许新用户注册 | `false` |
+| `allow_password_login` | 允许密码登录 | `true` |
+| `allow_federation` | 允许跨服务器通信 | `false` |
+
+## 环境变量
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `CONDUIT_SERVER` | Conduit 服务器地址 | `http://localhost:10000` |
+| `CONDUIT_PORT` | 主机映射端口 | `10000` |
+| `CONDUIT_ALLOW_REGISTRATION` | 允许新用户注册 | `false` |
+| `ELEMENT_PORT` | Element Web 端口 | `10001` |
+
+## 用户密码
+
+**重要**: 所有用户密码通过环境变量设置，不在代码中存储。
+
+初始化前设置环境变量：
+
+```bash
+export MANAGER_PASSWORD="your-secure-manager-password"
+export HUMAN_PASSWORD="your-secure-human-password"
+export ARCH_PASSWORD="your-arch-password"
+export DEV_PASSWORD="your-dev-password"
+export QA_PASSWORD="your-qa-password"
+export SRE_PASSWORD="your-sre-password"
+export RESEARCH_PASSWORD="your-research-password"
+```
+
+然后运行初始化脚本：
+```bash
+bash configs/matrix/init.sh
+```
 
 ## 使用方法
 
@@ -33,13 +62,13 @@
 make up
 ```
 
-### 2. 初始化用户和房间
+### 2. 初始化用户
 
 ```bash
-# 确保 Conduit 已启动
-make ps
-
-# 运行初始化脚本
+# 设置密码并运行初始化
+export MANAGER_PASSWORD="your-secure-password"
+export HUMAN_PASSWORD="your-secure-password"
+# ... 设置其他密码
 bash configs/matrix/init.sh
 ```
 
@@ -47,24 +76,23 @@ bash configs/matrix/init.sh
 
 访问 http://localhost:10001
 
-使用以下账号登录：
+使用环境变量中设置的密码登录。
 
-| 用户 | 用户名 | 密码 |
-|------|--------|------|
-| Human | `@human` | `human_password` |
-| Manager | `@manager` | `manager_password` |
-| Arch | `@arch` | `arch_password` |
-| Dev | `@dev` | `dev_password` |
-| QA | `@qa` | `qa_password` |
-| SRE | `@sre` | `sre_password` |
-| Research | `@research` | `research_password` |
+## 安全加固（生产环境）
 
-## 环境变量
+1. **禁用用户注册**
+   ```bash
+   export CONDUIT_ALLOW_REGISTRATION=false
+   ```
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `CONDUIT_SERVER` | Conduit 服务器地址 | `http://localhost:10000` |
-| `CONDUIT_ADMIN_SECRET` | Admin API 密钥 | `clawteam-secret-change-me` |
+2. **限制端口访问**
+   - 开发环境：暴露在所有接口
+   - 生产环境：使用反向代理 + TLS，仅允许特定网络访问
+
+3. **启用联邦（谨慎）**
+   ```yaml
+   allow_federation: true
+   ```
 
 ## 故障排查
 
@@ -75,10 +103,10 @@ bash configs/matrix/init.sh
 lsof -i :10000
 ```
 
-### 无法创建用户
+### 用户创建失败
 
-确认 `registration_shared_secret` 与 `conduit.yaml` 中配置一致。
+确认环境变量已正确设置，且 `CONDUIT_ALLOW_REGISTRATION=true`。
 
 ### 房间创建失败
 
-某些房间 ID 可能已存在，脚本会自动跳过。
+脚本会自动跳过已存在的房间，这是预期行为。

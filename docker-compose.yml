@@ -14,6 +14,7 @@ services:
       - CONDUIT_SERVER=${CONDUIT_SERVER:-localhost:10000}
       - CONDUIT_DATABASE_PATH=/data/conduit.db
       - CONDUIT_PORT=6167
+      - CONDUIT_ALLOW_REGISTRATION=${CONDUIT_ALLOW_REGISTRATION:-false}
       - RUST_LOG=info
     networks:
       - clawteam-network
@@ -25,14 +26,32 @@ services:
       start_period: 10s
 
   # ============================================
-  # OpenClaw Gateway (Manager)
+  # Element Web (Matrix Client)
   # ============================================
-  openclaw-gateway:
-    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
-    container_name: clawteam-openclaw
+  element:
+    image: vectorim/element-web:latest
+    container_name: clawteam-element
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${ELEMENT_PORT:-10001}:80"
+    volumes:
+      - element-config:/etc/element:ro
+    environment:
+      - SERVER_NAME=${CONDUIT_SERVER:-localhost:10000}
+    networks:
+      - clawteam-network
+    depends_on:
+      - conduit
+
+  # ============================================
+  # OpenClaw Agents
+  # ============================================
+
+  # Manager Agent
+  manager:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-manager
+    restart: unless-stopped
     volumes:
       - openclaw-config:/openclaw/config
       - openclaw-data:/openclaw/data
@@ -40,19 +59,125 @@ services:
       - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
       - OPENCLAW_CONFIG_PATH=/openclaw/config
       - OPENCLAW_DATA_PATH=/openclaw/data
-      - CONDUIT_SERVER=${CONDUIT_SERVER:-http://conduit:6167}
-      - MANAGER_API_KEY=${MANAGER_API_KEY}
+      - CONDUIT_SERVER=http://conduit:6167
+      - AGENT_API_KEY=${MANAGER_API_KEY}
+      - AGENT_ID=manager
+      - AGENT_MODEL=${MANAGER_MODEL:-claude-opus-4-20250514}
     networks:
       - clawteam-network
     depends_on:
       conduit:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+
+  # Arch Agent
+  arch:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-arch
+    restart: unless-stopped
+    volumes:
+      - openclaw-config:/openclaw/config
+      - openclaw-data:/openclaw/data
+    environment:
+      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
+      - OPENCLAW_CONFIG_PATH=/openclaw/config
+      - OPENCLAW_DATA_PATH=/openclaw/data
+      - CONDUIT_SERVER=http://conduit:6167
+      - AGENT_API_KEY=${ARCH_API_KEY}
+      - AGENT_ID=arch
+      - AGENT_MODEL=${ARCH_MODEL:-claude-opus-4-20250514}
+    networks:
+      - clawteam-network
+    depends_on:
+      conduit:
+        condition: service_healthy
+
+  # Dev Agent
+  dev:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-dev
+    restart: unless-stopped
+    volumes:
+      - openclaw-config:/openclaw/config
+      - openclaw-data:/openclaw/data
+    environment:
+      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
+      - OPENCLAW_CONFIG_PATH=/openclaw/config
+      - OPENCLAW_DATA_PATH=/openclaw/data
+      - CONDUIT_SERVER=http://conduit:6167
+      - AGENT_API_KEY=${DEV_API_KEY}
+      - AGENT_ID=dev
+      - AGENT_MODEL=${DEV_MODEL:-claude-sonnet-4-20250514}
+    networks:
+      - clawteam-network
+    depends_on:
+      conduit:
+        condition: service_healthy
+
+  # QA Agent
+  qa:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-qa
+    restart: unless-stopped
+    volumes:
+      - openclaw-config:/openclaw/config
+      - openclaw-data:/openclaw/data
+    environment:
+      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
+      - OPENCLAW_CONFIG_PATH=/openclaw/config
+      - OPENCLAW_DATA_PATH=/openclaw/data
+      - CONDUIT_SERVER=http://conduit:6167
+      - AGENT_API_KEY=${QA_API_KEY}
+      - AGENT_ID=qa
+      - AGENT_MODEL=${QA_MODEL:-claude-sonnet-4-20250514}
+    networks:
+      - clawteam-network
+    depends_on:
+      conduit:
+        condition: service_healthy
+
+  # SRE Agent
+  sre:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-sre
+    restart: unless-stopped
+    volumes:
+      - openclaw-config:/openclaw/config
+      - openclaw-data:/openclaw/data
+    environment:
+      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
+      - OPENCLAW_CONFIG_PATH=/openclaw/config
+      - OPENCLAW_DATA_PATH=/openclaw/data
+      - CONDUIT_SERVER=http://conduit:6167
+      - AGENT_API_KEY=${SRE_API_KEY}
+      - AGENT_ID=sre
+      - AGENT_MODEL=${SRE_MODEL:-claude-haiku-4-20250514}
+    networks:
+      - clawteam-network
+    depends_on:
+      conduit:
+        condition: service_healthy
+
+  # Research Agent
+  research:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-research
+    restart: unless-stopped
+    volumes:
+      - openclaw-config:/openclaw/config
+      - openclaw-data:/openclaw/data
+    environment:
+      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
+      - OPENCLAW_CONFIG_PATH=/openclaw/config
+      - OPENCLAW_DATA_PATH=/openclaw/data
+      - CONDUIT_SERVER=http://conduit:6167
+      - AGENT_API_KEY=${RESEARCH_API_KEY}
+      - AGENT_ID=research
+      - AGENT_MODEL=${RESEARCH_MODEL:-claude-opus-4-20250514}
+    networks:
+      - clawteam-network
+    depends_on:
+      conduit:
+        condition: service_healthy
 
 networks:
   clawteam-network:
@@ -92,3 +217,11 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/volumes/openclaw-data
+
+  # Element Web 配置
+  element-config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/element-config

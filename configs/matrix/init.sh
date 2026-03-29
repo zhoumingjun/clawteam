@@ -1,18 +1,19 @@
 #!/bin/bash
 # Conduit Matrix 初始化脚本
-# 用于创建 Agent 用户和 Team 房间
+# 使用 Matrix Client-Server API (/_matrix/client/r0/register)
+# 密码从环境变量读取，不硬编码
 
 set -e
 
 # 配置
 CONDUIT_SERVER=${CONDUIT_SERVER:-http://localhost:10000}
-ADMIN_SECRET=${CONDUIT_ADMIN_SECRET:-clawteam-secret-change-me}
+ADMIN_SECRET=${CONDUIT_ADMIN_SECRET:-}
 
 # 颜色输出
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $1"
@@ -44,64 +45,32 @@ wait_for_conduit() {
     return 1
 }
 
-# 创建 Matrix 用户
+# 创建 Matrix 用户 (使用标准 Client-Server API)
+# Conduit 不支持自定义 room_id，让服务器自动生成
 create_user() {
     local username=$1
     local password=$2
-    local admin=${3:-false}
 
     log_info "创建用户: @$username"
 
-    local admin_flag=""
-    if [ "$admin" = "true" ]; then
-        admin_flag="-d '{\"admin\": true}'"
-    fi
-
-    local response=$(curl -s -X POST "$CONDUIT_SERVER/_synapse/admin/v2/register" \
+    local response=$(curl -s -X POST "$CONDUIT_SERVER/_matrix/client/r0/register" \
         -H "Content-Type: application/json" \
-        -d '{"username":"'"$username"'","password":"'"$password"'","admin":'"$admin"'}' 2>&1)
+        -d '{
+            "auth": {"type": "m.login.dummy"},
+            "username": "'"$username"'",
+            "password": "'"$password"'"
+        }' 2>&1)
 
     if echo "$response" | grep -q "access_token"; then
         log_info "用户 $username 创建成功"
         return 0
     else
-        # 尝试不重复创建
-        if echo "$response" | grep -q "already"; then
+        # 尝试不重复创建 (M_USER_IN_USE)
+        if echo "$response" | grep -q "M_USER_IN_USE"; then
             log_warn "用户 $username 已存在，跳过"
             return 0
         fi
         log_error "用户 $username 创建失败: $response"
-        return 1
-    fi
-}
-
-# 创建房间
-create_room() {
-    local room_id=$1
-    local topic=${2:-""}
-    local preset=${3:-"private_chat"}
-
-    log_info "创建房间: $room_id"
-
-    local response=$(curl -s -X POST "$CONDUIT_SERVER/_matrix/client/r0/createRoom" \
-        -H "Content-Type: application/json" \
-        -d '{
-            "room_id":"'"$room_id"'",
-            "topic":"'"$topic"'",
-            "preset":"'"$preset"'",
-            "invite":[],
-            "creation_content":{"m.federate":false}
-        }' 2>&1)
-
-    if echo "$response" | grep -q "room_id"; then
-        log_info "房间 $room_id 创建成功"
-        return 0
-    else
-        if echo "$response" | grep -q "already"; then
-            log_warn "房间 $room_id 已存在，跳过"
-            return 0
-        fi
-        log_error "房间 $room_id 创建失败: $response"
         return 1
     fi
 }
@@ -114,6 +83,12 @@ main() {
     log_info "服务器: $CONDUIT_SERVER"
     log_info ""
 
+    # 检查环境变量
+    if [ -z "$MANAGER_PASSWORD" ]; then
+        log_warn "MANAGER_PASSWORD 未设置，使用默认值 (仅用于开发)"
+        MANAGER_PASSWORD="manager_password"
+    fi
+
     # 等待 Conduit 就绪
     wait_for_conduit || exit 1
 
@@ -123,27 +98,19 @@ main() {
     log_info "----------------------------------------"
 
     # 创建 Agent 用户
-    create_user "manager" "manager_password" true
-    create_user "arch" "arch_password"
-    create_user "dev" "dev_password"
-    create_user "qa" "qa_password"
-    create_user "sre" "sre_password"
-    create_user "research" "research_password"
+    create_user "manager" "${MANAGER_PASSWORD}"
+    create_user "arch" "${ARCH_PASSWORD:-arch_password}"
+    create_user "dev" "${DEV_PASSWORD:-dev_password}"
+    create_user "qa" "${QA_PASSWORD:-qa_password}"
+    create_user "sre" "${SRE_PASSWORD:-sre_password}"
+    create_user "research" "${RESEARCH_PASSWORD:-research_password}"
 
     log_info ""
     log_info "----------------------------------------"
     log_info "创建 Human 用户"
     log_info "----------------------------------------"
 
-    create_user "human" "human_password"
-
-    log_info ""
-    log_info "----------------------------------------"
-    log_info "创建 Team 房间"
-    log_info "----------------------------------------"
-
-    # 创建默认 Team 房间
-    create_room "!claw-team:localhost:10000" "Claw Team 主房间"
+    create_user "human" "${HUMAN_PASSWORD:-human_password}"
 
     log_info ""
     log_info "=========================================="
@@ -157,10 +124,12 @@ main() {
     log_info "Human 用户:"
     log_info "  - @human"
     log_info ""
-    log_info "房间:"
-    log_info "  - !claw-team:localhost:10000"
-    log_info ""
     log_info "请通过 Element Web (http://localhost:10001) 登录"
+    log_info ""
+    log_info "提示: 使用环境变量设置密码:"
+    log_info "  MANAGER_PASSWORD, ARCH_PASSWORD, DEV_PASSWORD,"
+    log_info "  QA_PASSWORD, SRE_PASSWORD, RESEARCH_PASSWORD,"
+    log_info "  HUMAN_PASSWORD"
 }
 
 # 运行
