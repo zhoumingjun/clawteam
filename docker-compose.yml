@@ -1,0 +1,81 @@
+services:
+  # ============================================
+  # Conduit Matrix Homeserver
+  # ============================================
+  conduit:
+    image: matrixdotorg/conduit:latest
+    container_name: clawteam-conduit
+    restart: unless-stopped
+    ports:
+      - "${CONDUIT_PORT:-10000}:6167"
+    volumes:
+      - conduit-data:/data
+    environment:
+      - CONDUIT_SERVER=${CONDUIT_SERVER:-localhost:10000}
+      - CONDUIT_DATABASE_PATH=/data/conduit.db
+      - CONDUIT_PORT=6167
+      - RUST_LOG=info
+    networks:
+      - clawteam-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6167/_matrix/client/versions"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ============================================
+  # OpenClaw Gateway (Manager)
+  # ============================================
+  openclaw-gateway:
+    image: openclaw/openclaw:${OPENCLAW_VERSION:-latest}
+    container_name: clawteam-openclaw
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - openclaw-config:/openclaw/config
+      - openclaw-data:/openclaw/data
+    environment:
+      - OPENCLAW_VERSION=${OPENCLAW_VERSION:-latest}
+      - OPENCLAW_CONFIG_PATH=/openclaw/config
+      - OPENCLAW_DATA_PATH=/openclaw/data
+      - CONDUIT_SERVER=${CONDUIT_SERVER:-http://conduit:6167}
+      - MANAGER_API_KEY=${MANAGER_API_KEY}
+    networks:
+      - clawteam-network
+    depends_on:
+      conduit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  clawteam-network:
+    driver: bridge
+
+volumes:
+  conduit-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/conduit-data
+
+  openclaw-config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/openclaw-config
+
+  openclaw-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/volumes/openclaw-data
