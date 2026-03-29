@@ -1,0 +1,38 @@
+# Conduit Matrix Homeserver Configuration
+# https://gitlab.com/famedly/conduit
+
+# 服务名称（必须与域名匹配）
+server_name: "localhost:10000"
+
+# 数据库配置
+database_path: "/data/conduit.db"
+
+# 服务端口
+port: 6167
+
+# 允许新用户注册
+allow_registration: true
+
+# 允许密码登录
+allow_password_login: true
+
+# 允许交友请求
+allow_federation: true
+
+# 启用共享秘密注册（用于管理 API）
+registration_shared_secret: "clawteam-secret-change-me"
+
+# 日志级别
+log: "info"
+
+# 最大请求大小（字节）
+max_request_size: 20000000
+
+# 开启 TURN 服务器（可选）
+# turn_uris: []
+
+# ACP 专用房间启用
+acp_rooms_enabled: true
+
+# Slack 兼容模式（可选）
+# slack_prefix: ""
