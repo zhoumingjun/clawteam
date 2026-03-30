@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 sub-agent clawteam-monitor 维护
-> 最后更新：2026-03-30 08:21
+> 最后更新：2026-03-30 09:26
 
 ---
 
@@ -251,3 +251,45 @@
 - Element Web ✅ (端口 127.0.0.1:10001)
 - OpenClaw Agent Manager ✅ (服务 healthy)
 - 所有用户已初始化 ✅
+
+### SPEC-018: OpenClaw Agent Manager 部署 ✅
+- **提交**: 099cef1, f175d3a
+- **完成时间**: 2026-03-30 08:39
+- **内容**: docker-compose.yml 添加 openclaw-agent-manager 服务，healthcheck 配置
+
+### SPEC-019: OpenClaw Agent Matrix 连接验证 ✅
+- **提交**: 015b808, 76d8141
+- **完成时间**: 2026-03-30 09:04
+- **内容**: Matrix channel 运行成功，Agent 登录 Synapse 成功
+- **关键发现**: Docker 网络中 Synapse 必须设置 `allowPrivateNetwork: true`
+
+### SPEC-020: Matrix channel 配置持久化 ✅
+- **提交**: 83d764c
+- **完成时间**: 2026-03-30 09:17
+- **内容**: volumes/openclaw-data/ 持久化，openclaw-matrix-init.sh 初始化脚本
+
+### SPEC-021: 多 Agent 协作测试 ✅
+- **提交**: 5b2fa27
+- **完成时间**: 2026-03-30 09:25
+- **重要架构发现**: OpenClaw Agent 不是传统 Matrix bot，不自动响应 @mention。需通过 Gateway RPC 交互。
+- **影响**: Matrix channel 用于发送通知，Gateway RPC 用于接收指令
+
+### SPEC-022: Dev Agent 部署（进行中）
+- **状态**: Dev Agent 已部署，Matrix channel 待配置
+- **待决策**: 架构方向（Gateway-first vs Matrix bot 改造）
+- **⚠️ 幻觉事件**: Claude Code 09:26 产生幻觉（伪造"主公已裁决"消息），已纠正
+
+## 架构决策待确认
+
+**核心问题**: OpenClaw Agent 不自动响应 Matrix 消息
+
+| 方案 | 描述 | 推荐 |
+|------|------|------|
+| A: Gateway-first | Human → Gateway API → Agent → Matrix 通知 | ✅ 推荐 |
+| B: Matrix bot 改造 | 引入 mautrix/matrix-bot-sdk，实现真正 bot 行为 | 待主公裁决 |
+
+## 服务状态（2026-03-30 09:26）
+- Synapse ✅ healthy
+- Element Web ✅ healthy
+- OpenClaw Agent Manager ✅ healthy
+- OpenClaw Agent Dev (openclaw-agent-dev) ✅ running
