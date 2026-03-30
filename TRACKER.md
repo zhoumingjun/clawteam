@@ -80,13 +80,24 @@
   - 添加测试脚本 `tests/matrix/test-connection.sh`
 - **验证**: Agent 成功连接 Synapse ✅
 
-### ✅ MVP + Agent + Matrix 连接完成！
+### SPEC-020: Matrix channel 配置持久化 ✅
+- **状态**: 已完成
+- **完成时间**: 2026-03-30 09:05
+- **内容**:
+  - 添加 volume 挂载 `volumes/openclaw-data:/home/node/.openclaw:rw`
+  - 添加 `configs/agents/manager/openclaw.json` 配置文件
+  - 添加 `scripts/openclaw-matrix-init.sh` 初始化脚本
+  - 更新 docker-compose.yml 环境变量
+- **验证**: 容器重启后配置保持 ✅
+
+### ✅ MVP + Agent + Matrix 连接 + 配置持久化完成！
 
 ## 当前状态
 - Synapse ✅ (端口 127.0.0.1:8008)
 - Element Web ✅ (端口 127.0.0.1:10001)
 - OpenClaw Agent Manager ✅ (服务 healthy)
 - OpenClaw Agent Matrix channel ✅ (running)
+- OpenClaw 配置持久化 ✅ (volume mount)
 - 所有用户已初始化 ✅
 
 ---

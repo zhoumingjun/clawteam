@@ -41,8 +41,12 @@ services:
       - AGENT_ID=${OPENCLAW_AGENT_ID:-manager}
       - AGENT_PASSWORD=${OPENCLAW_AGENT_PASSWORD}
       - OPENCLAW_API_KEY=${OPENCLAW_API_KEY}
+      - OPENCLAW_MATRIX_HOMESERVER=http://synapse:8008
+      - OPENCLAW_AGENT_ID=${OPENCLAW_AGENT_ID:-openclaw-agent}
+      - OPENCLAW_AGENT_PASSWORD=${OPENCLAW_AGENT_PASSWORD}
     volumes:
       - ./configs/agents/manager:/app/agent:ro
+      - ./volumes/openclaw-data:/home/node/.openclaw:rw
     networks:
       - clawteam-network
     depends_on:
