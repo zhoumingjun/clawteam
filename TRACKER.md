@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 sub-agent clawteam-monitor 维护
-> 最后更新：2026-03-30 02:21
+> 最后更新：2026-03-30 08:21
 
 ---
 
@@ -45,7 +45,23 @@
 ### SPEC-011~015 ✅
 - SPEC-011: 7d5b0df | SPEC-012: 6a36067 | SPEC-013: 16f8ce6 | SPEC-014: 49d2a51 | SPEC-015: 9621372
 
-### ✅ 全部 SPEC 已完成！
+### SPEC-016: Element Web UI 集成 ✅
+- **提交**: 6c9685b
+- **完成时间**: 2026-03-30 08:20
+- **验证**: Element Web 正确指向 localhost:8008，端口 10001 可访问
+
+### SPEC-017: 端口安全加固 ✅
+- **提交**: [pending push]
+- **完成时间**: 2026-03-30 08:21
+- **内容**: docker-compose.yml 绑定 127.0.0.1，docs/security.md 安全文档
+- **用户初始化**: manager, arch, dev, qa, sre, research, human 全部创建成功
+
+### ✅ MVP 完成！
+
+## 当前状态
+- Synapse ✅ (端口 127.0.0.1:8008)
+- Element Web ✅ (端口 127.0.0.1:10001)
+- 所有用户已初始化 ✅
 
 ---
 
@@ -120,11 +136,29 @@
 
 ## 当前阻塞
 
-SPEC-002（docker-compose）、SPEC-003（conduit-matrix）存在严重问题，需重构：
-1. 密码硬编码
-2. API 不兼容（Synapse vs Conduit）
-3. 缺少 Element Web 服务
-4. 端口暴露未加固
+~~SPEC-002（docker-compose）、SPEC-003（conduit-matrix）存在严重问题，需重构：~~
+~~1. 密码硬编码~~ ✅ 已移除（fac2260）
+~~2. API 不兼容（Synapse vs Conduit）~~ ✅ 已切换 Synapse 并修复
+~~3. 缺少 Element Web 服务~~ ⚠️ 待补充
+~~4. 端口暴露未加固~~ ⚠️ 待补充
+~~Synapse Exit(2)~~ ✅ 已修复（94fe00e）
+
+**当前阻塞：**
+- Element Web UI 服务未集成
+- 端口暴露安全加固待完成
+
+## 进展日志
+
+### 2026-03-30 07:30
+- **Synapse 配置修复完成**（commit 94fe00e）：
+  - 创建 `configs/synapse/homeserver.yaml`（替代环境变量配置）
+  - 修复 YAML 缩进错误（pepper/ACME）
+  - 修复 `contexts` → `names`（Synapse API 变更）
+  - 添加 `media_store_path` 绝对路径
+  - 启用 `enable_registration_without_verification`
+  - docker-compose.yml 改用直接 bind mount
+  - ✅ API 验证通过（r0.0.1 ~ v1.11）
+- **当前状态：** Synapse 运行中，等待下一步指令
 
 ## 协作约定
 
@@ -133,3 +167,16 @@ SPEC-002（docker-compose）、SPEC-003（conduit-matrix）存在严重问题，
 - 重大决策（架构方向）需通知用户
 - 每30分钟向用户同步进展（飞书）
 - 5分钟无响应 → 自行与 Claude Code 讨论决定
+
+### 2026-03-30 06:55 - Synapse 启动修复
+**问题：** Synapse Exit(2)，配置挂载与数据卷冲突 + 多处配置错误
+
+**修复内容：**
+1. `pepper:` 缩进错误（1空格→2空格）
+2. `ACME:` 缩进错误（1空格→0空格）
+3. `contexts` → `names`（Synapse API 变更）
+4. 添加 `media_store_path: "/data/media_store"`（绝对路径）
+5. 添加 `enable_registration_without_verification: true`
+6. docker-compose.yml 改用直接 bind mount（`./volumes/synapse-data:/data:rw`）替代 named volume + driver_opts
+
+**结果：** ✅ Synapse healthy，API 正常响应（r0.0.1 ~ v1.11）
