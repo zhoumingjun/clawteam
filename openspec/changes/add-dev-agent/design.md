@@ -59,5 +59,32 @@ services:
 
 ## Open Questions
 
-1. Dev Agent 是否需要独立部署还是与 Manager 共享 Gateway？
-2. Agent 间通信如何实现？（通过 Matrix room？）
+1. ~~Dev Agent 是否需要独立部署还是与 Manager 共享 Gateway？~~ ✅ 各自独立部署
+2. ~~Agent 间通信如何实现？（通过 Matrix room？）~~ ✅ 已创建 clawteam-agents 房间
+
+## Completed: Matrix Room Setup (SPEC-022)
+
+### Room Architecture
+
+```
+Matrix Homeserver (Synapse)
+├── Claw Team (主房间)
+│   └── 所有用户和 Agent (@human, @manager, @dev, @arch, @qa, @sre, @research, @openclaw-agent, @openclaw-agent-dev)
+│
+└── clawteam-agents (Agent 专用房间)
+    └── 仅 Agent 账户 (@openclaw-agent, @openclaw-agent-dev, @arch, @dev, @qa, @sre, @research)
+```
+
+### 实现命令
+
+```bash
+# 创建 agents 房间
+curl -X POST "http://localhost:8008/_matrix/client/r0/createRoom" \
+  -H "Authorization: Bearer <manager_token>" \
+  -d '{"name": "clawteam-agents", "visibility": "private", "invite": ["@openclaw-agent-dev:localhost"]}'
+
+# 邀请其他 Agent
+curl -X POST "http://localhost:8008/_matrix/client/r0/rooms/!dZvtMsoEkcegNIyzHS:localhost/invite" \
+  -H "Authorization: Bearer <manager_token>" \
+  -d '{"user_id": "@arch:localhost"}'
+```
