@@ -28,6 +28,13 @@ The `.claude/` directory contains:
   - `marketplaces/claude-plugins-official/` - Official plugin marketplace
   - Various installed plugins for different development tasks
 ## Rules
+
+### ⚠️ 重要：OpenClaw 操作必须在 Docker 容器内执行
+- **禁止**在主机（macOS）上运行 `openclaw` CLI
+- 所有 OpenClaw 操作（channels add, gateway start, agent 命令等）必须通过 `docker compose exec openclaw-agent-manager openclaw <command>` 执行
+- 主机 OpenClaw CLI 缺少 `@vector-im/matrix-bot-sdk` 依赖，会导致 Matrix 插件失败
+- 如需查看容器内日志：`docker compose logs -f openclaw-agent-manager`
+
 - Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - Follow industry best practices for every task:
   - Docker Compose: official best practices, healthcheck, depends_on with condition: service_healthy
