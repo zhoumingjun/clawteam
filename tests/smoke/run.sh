@@ -20,12 +20,12 @@ TESTS_FAILED=0
 
 log_pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
 }
 
 log_fail() {
     echo -e "${RED}[FAIL]${NC} $1"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
 }
 
 log_info() {
@@ -61,7 +61,7 @@ fi
 # Test 3: 检查 docker-compose 服务状态
 # -----------------------------------------------------------------------------
 log_info "[3/8] 检查服务启动状态..."
-if docker compose ps | grep -q "Up"; then
+if docker compose ps --format "{{.Status}}" | grep -q "^Up"; then
     log_pass "至少一个服务已启动"
 else
     log_fail "没有服务运行，请先运行 'make up'"
@@ -91,7 +91,7 @@ fi
 # Test 6: Synapse 容器健康状态
 # -----------------------------------------------------------------------------
 log_info "[6/8] 检查 Synapse 容器..."
-if docker ps | grep -q "clawteam-synapse.*Up"; then
+if docker ps --format "{{.Names}} {{.Status}}" | grep -q "^clawteam-synapse.*Up"; then
     log_pass "Synapse 容器运行中"
 else
     log_fail "Synapse 容器未运行"
@@ -101,7 +101,7 @@ fi
 # Test 7: Element 容器健康状态
 # -----------------------------------------------------------------------------
 log_info "[7/8] 检查 Element 容器..."
-if docker ps | grep -q "clawteam-element.*Up"; then
+if docker ps --format "{{.Names}} {{.Status}}" | grep -q "^clawteam-element.*Up"; then
     log_pass "Element 容器运行中"
 else
     log_fail "Element 容器未运行"
@@ -111,7 +111,7 @@ fi
 # Test 8: Docker 网络检查
 # -----------------------------------------------------------------------------
 log_info "[8/8] 检查 Docker 网络..."
-if docker network inspect clawteam-clawteam-network > /dev/null 2>&1; then
+if docker network inspect clawteam_clawteam-network > /dev/null 2>&1; then
     log_pass "Docker 网络存在"
 else
     log_fail "Docker 网络不存在"
