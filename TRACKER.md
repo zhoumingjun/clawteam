@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 灵犀 维护
-> 最后更新：2026-03-30 10:36
+> 最后更新：2026-03-30 11:46
 
 ---
 
@@ -36,17 +36,18 @@
 | 020 | Matrix channel 配置持久化 | 83d764c | 09:17 |
 | 021 | 多 Agent 协作测试 | 5b2fa27 | 09:25 |
 | 022 | Dev Agent 部署 | — | 09:30 |
+| 023 | Matrix 房间配置 | eca996f | 11:37 |
 
 ---
 
-## 服务状态（2026-03-30 10:36）
+## 服务状态（2026-03-30 11:46）
 
 | 服务 | 状态 | 端口 |
 |------|------|------|
 | Synapse (Matrix HS) | ✅ healthy | 127.0.0.1:8008 |
 | Element Web | ✅ healthy | 127.0.0.1:10001 |
-| OpenClaw Agent Manager | ✅ healthy, Matrix running | container |
-| OpenClaw Agent Dev | ✅ healthy, Matrix running | container |
+| OpenClaw Agent Manager | ✅ healthy | container |
+| OpenClaw Agent Dev | ✅ healthy | container |
 
 ---
 
