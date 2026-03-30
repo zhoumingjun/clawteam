@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.25"
+  },
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "channels": {
+    "matrix": {
+      "allowPrivateNetwork": true,
+      "enabled": true,
+      "homeserver": "http://synapse:8008",
+      "userId": "@openclaw-agent-sre:localhost",
+      "password": "sre123",
+      "deviceName": "openclaw-agent-sre",
+      "allowBots": "mentions",
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [
+        "@human:localhost",
+        "@manager:localhost",
+        "@arch:localhost",
+        "@dev:localhost",
+        "@qa:localhost",
+        "@sre:localhost",
+        "@research:localhost"
+      ],
+      "groups": {
+        "!zfNrpyWgojlkJcigrf:localhost": {
+          "requireMention": true
+        }
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "matrix": {
+        "enabled": true
+      }
+    }
+  }
+}

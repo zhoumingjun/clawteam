@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 灵犀 维护
-> 最后更新：2026-03-30 13:44
+> 最后更新：2026-03-30 14:25
 
 ---
 
@@ -37,11 +37,12 @@
 | 021 | 多 Agent 协作测试 | 5b2fa27 | 09:25 |
 | 022 | Dev Agent 部署 | — | 09:30 |
 | 023 | Matrix 房间配置 | eca996f | 11:37 |
-| 024 | Agent @mention 配置 | — | 13:05 |
+| 024 | Agent @mention 配置 | a290707 | 13:05 |
+| 025 | Arch/QA/SRE/Research Agent 部署 | — | 14:25 |
 
 ---
 
-## 服务状态（2026-03-30 13:05）
+## 服务状态（2026-03-30 14:25）
 
 | 服务 | 状态 | 端口 |
 |------|------|------|
@@ -49,6 +50,10 @@
 | Element Web | ✅ healthy | 127.0.0.1:10001 |
 | OpenClaw Agent Manager | ✅ healthy | container |
 | OpenClaw Agent Dev | ✅ healthy | container |
+| OpenClaw Agent Arch | ✅ healthy | container |
+| OpenClaw Agent QA | ✅ healthy | container |
+| OpenClaw Agent SRE | ✅ healthy | container |
+| OpenClaw Agent Research | ✅ healthy | container |
 
 ---
 

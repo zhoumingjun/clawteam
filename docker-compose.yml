@@ -83,6 +83,102 @@ services:
       retries: 3
       start_period: 30s
 
+  openclaw-agent-arch:
+    image: ghcr.io/openclaw/openclaw:main-slim
+    container_name: clawteam-openclaw-agent-arch
+    restart: unless-stopped
+    environment:
+      - OPENCLAW_MATRIX_HOMESERVER=http://synapse:8008
+      - OPENCLAW_AGENT_ID=openclaw-agent-arch
+      - OPENCLAW_AGENT_PASSWORD=${OPENCLAW_ARCH_AGENT_PASSWORD}
+      - OPENCLAW_API_KEY=${OPENCLAW_API_KEY}
+    volumes:
+      - ./configs/agents/arch:/app/agent:ro
+      - ./volumes/openclaw-arch-data:/home/node/.openclaw:rw
+    networks:
+      - clawteam-network
+    depends_on:
+      synapse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "openclaw", "gateway", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  openclaw-agent-qa:
+    image: ghcr.io/openclaw/openclaw:main-slim
+    container_name: clawteam-openclaw-agent-qa
+    restart: unless-stopped
+    environment:
+      - OPENCLAW_MATRIX_HOMESERVER=http://synapse:8008
+      - OPENCLAW_AGENT_ID=openclaw-agent-qa
+      - OPENCLAW_AGENT_PASSWORD=${OPENCLAW_QA_AGENT_PASSWORD}
+      - OPENCLAW_API_KEY=${OPENCLAW_API_KEY}
+    volumes:
+      - ./configs/agents/qa:/app/agent:ro
+      - ./volumes/openclaw-qa-data:/home/node/.openclaw:rw
+    networks:
+      - clawteam-network
+    depends_on:
+      synapse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "openclaw", "gateway", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  openclaw-agent-sre:
+    image: ghcr.io/openclaw/openclaw:main-slim
+    container_name: clawteam-openclaw-agent-sre
+    restart: unless-stopped
+    environment:
+      - OPENCLAW_MATRIX_HOMESERVER=http://synapse:8008
+      - OPENCLAW_AGENT_ID=openclaw-agent-sre
+      - OPENCLAW_AGENT_PASSWORD=${OPENCLAW_SRE_AGENT_PASSWORD}
+      - OPENCLAW_API_KEY=${OPENCLAW_API_KEY}
+    volumes:
+      - ./configs/agents/sre:/app/agent:ro
+      - ./volumes/openclaw-sre-data:/home/node/.openclaw:rw
+    networks:
+      - clawteam-network
+    depends_on:
+      synapse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "openclaw", "gateway", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  openclaw-agent-research:
+    image: ghcr.io/openclaw/openclaw:main-slim
+    container_name: clawteam-openclaw-agent-research
+    restart: unless-stopped
+    environment:
+      - OPENCLAW_MATRIX_HOMESERVER=http://synapse:8008
+      - OPENCLAW_AGENT_ID=openclaw-agent-research
+      - OPENCLAW_AGENT_PASSWORD=${OPENCLAW_RESEARCH_AGENT_PASSWORD}
+      - OPENCLAW_API_KEY=${OPENCLAW_API_KEY}
+    volumes:
+      - ./configs/agents/research:/app/agent:ro
+      - ./volumes/openclaw-research-data:/home/node/.openclaw:rw
+    networks:
+      - clawteam-network
+    depends_on:
+      synapse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "openclaw", "gateway", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 networks:
   clawteam-network:
     driver: bridge
