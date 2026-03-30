@@ -66,14 +66,27 @@
   - volume 挂载 configs/agents/manager/:/app/agent
   - 网络使用 clawteam-network
   - 依赖 Synapse health check
+  - healthcheck: openclaw gateway status
 - **验证**: 服务 healthy ✅
 
-### ✅ MVP + Agent Manager 完成！
+### SPEC-019: OpenClaw Agent Matrix 连接测试 ✅
+- **状态**: 已完成
+- **完成时间**: 2026-03-30 08:52
+- **内容**:
+  - 启用 `@openclaw/matrix` 插件
+  - 配置 `allowPrivateNetwork: true`（Docker 网络支持）
+  - 创建 `openclaw-agent` 用户并注册到 Synapse
+  - Matrix channel 状态: running ✅
+  - 添加测试脚本 `tests/matrix/test-connection.sh`
+- **验证**: Agent 成功连接 Synapse ✅
+
+### ✅ MVP + Agent + Matrix 连接完成！
 
 ## 当前状态
 - Synapse ✅ (端口 127.0.0.1:8008)
 - Element Web ✅ (端口 127.0.0.1:10001)
 - OpenClaw Agent Manager ✅ (服务 healthy)
+- OpenClaw Agent Matrix channel ✅ (running)
 - 所有用户已初始化 ✅
 
 ---
