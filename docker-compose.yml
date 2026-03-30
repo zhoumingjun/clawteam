@@ -32,6 +32,23 @@ services:
     depends_on:
       - synapse
 
+  openclaw-agent-manager:
+    image: ghcr.io/openclaw/openclaw:main-slim
+    container_name: clawteam-openclaw-agent-manager
+    restart: unless-stopped
+    environment:
+      - MATRIX_HOMESERVER=http://synapse:8008
+      - AGENT_ID=${OPENCLAW_AGENT_ID:-manager}
+      - AGENT_PASSWORD=${OPENCLAW_AGENT_PASSWORD}
+      - OPENCLAW_API_KEY=${OPENCLAW_API_KEY}
+    volumes:
+      - ./configs/agents/manager:/app/agent:ro
+    networks:
+      - clawteam-network
+    depends_on:
+      synapse:
+        condition: service_healthy
+
 networks:
   clawteam-network:
     driver: bridge

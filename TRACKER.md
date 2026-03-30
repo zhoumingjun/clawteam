@@ -56,11 +56,24 @@
 - **内容**: docker-compose.yml 绑定 127.0.0.1，docs/security.md 安全文档
 - **用户初始化**: manager, arch, dev, qa, sre, research, human 全部创建成功
 
-### ✅ MVP 完成！
+### SPEC-018: OpenClaw Agent Manager 集成 ✅
+- **状态**: 已完成
+- **完成时间**: 2026-03-30 08:37
+- **内容**:
+  - docker-compose.yml 添加 openclaw-agent-manager 服务
+  - 使用镜像 `ghcr.io/openclaw/openclaw:main-slim`
+  - 配置 MATRIX_HOMESERVER, AGENT_ID, AGENT_PASSWORD, OPENCLAW_API_KEY
+  - volume 挂载 configs/agents/manager/:/app/agent
+  - 网络使用 clawteam-network
+  - 依赖 Synapse health check
+- **验证**: 服务 healthy ✅
+
+### ✅ MVP + Agent Manager 完成！
 
 ## 当前状态
 - Synapse ✅ (端口 127.0.0.1:8008)
 - Element Web ✅ (端口 127.0.0.1:10001)
+- OpenClaw Agent Manager ✅ (服务 healthy)
 - 所有用户已初始化 ✅
 
 ---

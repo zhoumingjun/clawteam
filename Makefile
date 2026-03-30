@@ -1,4 +1,4 @@
-.PHONY: help build up down logs ps test-smoke test-e2e clean init-user init-check help
+.PHONY: help build up down logs ps test-smoke test-e2e clean init-user init-check init-openclaw-agent help
 
 # 默认目标
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  make ps          - 查看服务状态"
 	@echo "  make init-user   - 初始化 Matrix 用户"
 	@echo "  make init-check  - 检查初始化状态"
+	@echo "  make init-openclaw-agent - 初始化 OpenClaw Agent"
 	@echo "  make test-smoke  - 运行烟雾测试"
 	@echo "  make test-e2e    - 运行 E2E 测试"
 	@echo "  make clean       - 清理容器和卷"
@@ -51,6 +52,8 @@ init-check:
 	@echo "  export QA_PASSWORD=xxx"
 	@echo "  export SRE_PASSWORD=xxx"
 	@echo "  export RESEARCH_PASSWORD=xxx"
+	@echo "  export OPENCLAW_API_KEY=xxx"
+	@echo "  export OPENCLAW_AGENT_PASSWORD=xxx"
 	@echo ""
 	@echo "或复制 .env.example 为 .env 并填写密码"
 
@@ -59,6 +62,12 @@ init-user: init-check
 	@echo ""
 	@echo "开始初始化 Matrix 用户..."
 	@bash configs/matrix/init.sh
+
+# 初始化 OpenClaw Agent
+init-openclaw-agent:
+	@echo ""
+	@echo "开始初始化 OpenClaw Agent Manager..."
+	@bash scripts/openclaw-agent-init.sh
 
 # 烟雾测试
 test-smoke:
