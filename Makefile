@@ -1,30 +1,28 @@
-.PHONY: build up down logs ps test-smoke test-e2e clean help
+.PHONY: help build up down logs ps test-smoke test-e2e clean init-user init-check help
 
 # 默认目标
 help:
 	@echo "Claw Team - AI 软件研发工厂"
 	@echo ""
 	@echo "可用命令："
-	@echo "  make build       - 构建所有 Docker 镜像"
 	@echo "  make up          - 启动所有服务"
 	@echo "  make down        - 停止所有服务"
 	@echo "  make restart     - 重启所有服务"
 	@echo "  make logs        - 查看所有日志"
 	@echo "  make ps          - 查看服务状态"
+	@echo "  make init-user   - 初始化 Matrix 用户"
+	@echo "  make init-check  - 检查初始化状态"
 	@echo "  make test-smoke  - 运行烟雾测试"
 	@echo "  make test-e2e    - 运行 E2E 测试"
 	@echo "  make clean       - 清理容器和卷"
 
-# 构建所有镜像
-build:
-	docker compose build
-
 # 启动所有服务
 up:
 	docker compose up -d
-	@echo "服务已启动"
-	@echo "Conduit (Matrix): http://localhost:10000"
-	@echo "Element Web: http://localhost:10001"
+	@echo ""
+	@echo "服务已启动："
+	@echo "  Synapse API: http://localhost:8008"
+	@echo "  Element Web: http://localhost:10001"
 
 # 停止所有服务
 down:
@@ -40,6 +38,27 @@ logs:
 # 查看服务状态
 ps:
 	docker compose ps
+
+# 检查初始化状态
+init-check:
+	@echo "检查初始化状态..."
+	@echo ""
+	@echo "请设置以下环境变量（必需）："
+	@echo "  export MANAGER_PASSWORD=xxx"
+	@echo "  export HUMAN_PASSWORD=xxx"
+	@echo "  export ARCH_PASSWORD=xxx"
+	@echo "  export DEV_PASSWORD=xxx"
+	@echo "  export QA_PASSWORD=xxx"
+	@echo "  export SRE_PASSWORD=xxx"
+	@echo "  export RESEARCH_PASSWORD=xxx"
+	@echo ""
+	@echo "或复制 .env.example 为 .env 并填写密码"
+
+# 初始化 Matrix 用户
+init-user: init-check
+	@echo ""
+	@echo "开始初始化 Matrix 用户..."
+	@bash configs/matrix/init.sh
 
 # 烟雾测试
 test-smoke:
