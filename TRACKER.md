@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 灵犀 维护
-> 最后更新：2026-03-30 11:53
+> 最后更新：2026-03-30 12:00
 
 ---
 
@@ -115,3 +115,17 @@ OpenClaw Agent 是 **Gateway-first** 架构，不是传统 Matrix bot：
 | Shell 脚本 | set -euo pipefail、shellcheck |
 | 架构 | 12-Factor App 原则 |
 | 安全 | CIS Docker Benchmark、OWASP Top 10 |
+
+## 错误记录
+
+### 10:36 - 主机 openclaw CLI 依赖缺失
+- Claude Code 在主机 macOS 运行 `openclaw channels add`
+- 根因：主机 OpenClaw CLI 缺少 `@vector-im/matrix-bot-sdk`，且 `mkdir '/openclaw'` 指向根目录
+- 修复：更新 `CLAUDE.md`，禁止主机运行 openclaw CLI，所有操作必须在 Docker 容器内
+
+### 12:00 - 烟雾测试解析 bug
+- 测试 8 项中 4 项失败
+- `((TESTS_PASSED++))` 在 `set -e` 下首次返回 0 触发 exit
+- `docker ps` 输出格式问题：NAME 列在行尾，正则无法匹配
+- 网络名称应为 `clawteam_clawteam-network`（下划线），非 `clawteam-clawteam-network`（连字符）
+- 修复：commit 1f367d5，所有 8 项测试通过 ✅

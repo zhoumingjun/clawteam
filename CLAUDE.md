@@ -44,6 +44,22 @@ The `.claude/` directory contains:
   - Backup: 3-2-1 rule (3 copies, 2 media, 1 offsite)
 
 
+## Project Status
+
+**2026-03-30**: All SPECs (001-023) completed.
+
+| Service | Status | Port |
+|---------|--------|------|
+| Synapse (Matrix HS) | ✅ healthy | 127.0.0.1:8008 |
+| Element Web | ✅ healthy | 127.0.0.1:10001 |
+| OpenClaw Agent Manager | ✅ healthy | container |
+| OpenClaw Agent Dev | ✅ healthy | container |
+
+**Architecture**: OpenClaw Agent is Gateway-first (not traditional Matrix bot)
+- Matrix channel for notifications
+- Commands via Gateway RPC (`openclaw agent` explicit invocation)
+- Session management is explicit, no auto-response to @mention
+
 ## Notes
 
 - This directory is configured to use a custom (non-Antrophic) API endpoint

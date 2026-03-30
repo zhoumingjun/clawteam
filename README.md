@@ -10,6 +10,7 @@
 - 💬 **Matrix 通信**: 基于 Matrix 协议的人机/机机交互
 - 🔒 **安全优先**: 端口绑定本地、安全加固开箱即用
 - 🐳 **一键部署**: Docker Compose 快速启动
+- 🚀 **Gateway-first**: OpenClaw Agent 通过 Gateway RPC 接收指令
 
 ## 架构
 
@@ -21,17 +22,23 @@
 │  │  Synapse   │◄────►│   Human    │                      │
 │  │  (Matrix)  │      │   (你)      │                      │
 │  └─────────────┘      └─────────────┘                      │
-│         │                                                      │
+│         │                       │                            │
 │  ┌──────────────────────────────────────────┐              │
 │  │              Agent Team                    │              │
 │  │  Manager │ Arch │ Dev │ QA │ SRE │ Res │              │
 │  └──────────────────────────────────────────┘              │
-│                                                              │
-│  ┌─────────────┐                                            │
-│  │Element Web │ ← 浏览器访问                                │
-│  └─────────────┘                                            │
+│         │                       │                            │
+│  ┌─────────────┐      ┌─────────────┐                      │
+│  │  Gateway    │◄────►│ Element Web │                      │
+│  │  (RPC)      │      │  (UI)        │                      │
+│  └─────────────┘      └─────────────┘                      │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**架构说明**: OpenClaw Agent 是 **Gateway-first** 架构：
+- Matrix channel 用于**发送通知**
+- 指令通过 **Gateway RPC** 接收（`openclaw agent` 命令显式调用）
+- Session 管理是显式的，不自动响应 @mention
 
 ## 快速开始
 
@@ -106,15 +113,9 @@ make init-user
 
 - **Matrix 服务器**: Synapse
 - **Web UI**: Element Web
+- **Agent 框架**: OpenClaw (Gateway-first)
 - **容器化**: Docker Compose
 - **Agent 配置**: Markdown 文件驱动
-
-## 文档
-
-- [部署指南](docs/deployment-guide.md)
-- [安全加固](docs/security.md)
-- [最佳实践](docs/best-practices.md)
-- [人机交互协议](docs/protocols/human-agent-protocol.md)
 
 ## 项目结构
 
@@ -133,6 +134,17 @@ clawteam/
 └── scripts/             # 脚本
 ```
 
+## 文档
+
+- [部署指南](docs/deployment-guide.md)
+- [安全加固](docs/security.md)
+- [最佳实践](docs/best-practices.md)
+- [人机交互协议](docs/protocols/human-agent-protocol.md)
+
 ## 许可证
 
 MIT
+
+---
+
+**状态**: ✅ SPEC-001 ~ SPEC-023 全部完成 (2026-03-30)
