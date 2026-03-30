@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 灵犀 维护
-> 最后更新：2026-03-30 11:46
+> 最后更新：2026-03-30 11:53
 
 ---
 
@@ -30,7 +30,7 @@
 | 014 | e2e-tests | 49d2a51 | 02:28 |
 | 015 | demo-project | 9621372 | 02:28 |
 | 016 | Element Web UI 集成 | 6c9685b | 08:20 |
-| 017 | 端口安全加固 | pending | 08:21 |
+| 017 | 端口安全加固 | f2e9cfc | 08:21 |
 | 018 | OpenClaw Agent Manager 集成 | f175d3a, 099cef1 | 08:40 |
 | 019 | OpenClaw Agent Matrix 连接 | 015b808, 76d8141 | 09:04 |
 | 020 | Matrix channel 配置持久化 | 83d764c | 09:17 |
