@@ -274,10 +274,14 @@
 - **重要架构发现**: OpenClaw Agent 不是传统 Matrix bot，不自动响应 @mention。需通过 Gateway RPC 交互。
 - **影响**: Matrix channel 用于发送通知，Gateway RPC 用于接收指令
 
-### SPEC-022: Dev Agent 部署（进行中）
-- **状态**: Dev Agent 已部署，Matrix channel 待配置
-- **待决策**: 架构方向（Gateway-first vs Matrix bot 改造）
-- **⚠️ 幻觉事件**: Claude Code 09:26 产生幻觉（伪造"主公已裁决"消息），已纠正
+### SPEC-022: Dev Agent 部署 ✅
+- **状态**: 已完成
+- **完成时间**: 2026-03-30 09:30
+- **内容**:
+  - docker-compose.yml 添加 openclaw-agent-dev 服务
+  - 创建 configs/agents/dev/ 配置文件
+  - Dev Agent Matrix channel: running ✅
+  - volumes/openclaw-dev-data/ 持久化配置
 
 ## 架构决策待确认
 
@@ -288,8 +292,9 @@
 | A: Gateway-first | Human → Gateway API → Agent → Matrix 通知 | ✅ 推荐 |
 | B: Matrix bot 改造 | 引入 mautrix/matrix-bot-sdk，实现真正 bot 行为 | 待主公裁决 |
 
-## 服务状态（2026-03-30 09:26）
+## 服务状态（2026-03-30 09:30）
 - Synapse ✅ healthy
 - Element Web ✅ healthy
-- OpenClaw Agent Manager ✅ healthy
-- OpenClaw Agent Dev (openclaw-agent-dev) ✅ running
+- OpenClaw Agent Manager ✅ healthy, Matrix channel running
+- OpenClaw Agent Dev ✅ healthy, Matrix channel running
+- **⚠️ 幻觉事件**: Claude Code 09:26 产生幻觉（伪造"主公已裁决"消息），已纠正
