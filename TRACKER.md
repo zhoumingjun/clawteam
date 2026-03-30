@@ -92,6 +92,11 @@
 
 ### ✅ MVP + Agent + Matrix 连接 + 配置持久化完成！
 
+### SPEC-021: 多 Agent 协作测试 ⏳
+- **状态**: 提案已创建，待审阅
+- **目标**: 测试 Manager Agent 任务分配和 Agent 间协作
+- **Artifacts**: proposal.md, design.md, specs, tasks.md
+
 ## 当前状态
 - Synapse ✅ (端口 127.0.0.1:8008)
 - Element Web ✅ (端口 127.0.0.1:10001)
