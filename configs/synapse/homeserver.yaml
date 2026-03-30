@@ -26,19 +26,20 @@ listeners:
       - "0.0.0.0"
     resources:
       - compress: true
-        contexts:
+        names:
           - client
       - compress: false
-        contexts:
+        names:
           - federation
 
 # Authentication
 password_config:
   enabled: true
- pepper: ""
+  pepper: ""
 
 # Registration
 enable_registration: true
+enable_registration_without_verification: true
 registration_shared_secret: "a-secret-key-change-in-production"
 
 # Metrics
@@ -53,10 +54,11 @@ api_throttling:
   burst_count: 10
 
 # Auto使用 ACME (Let's Encrypt)
- ACME:
-   enabled: false
+ACME:
+  enabled: false
 
 # Media
+media_store_path: "/data/media_store"
 max_upload_size: "10M"
 max_image_payload_size: "10M"
 dynamic_thumbnails: false
