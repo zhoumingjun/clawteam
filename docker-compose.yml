@@ -1,11 +1,4 @@
-# Claw Team - MVP Docker Compose
-# 仅包含 Synapse (Matrix 服务器) 和 Element Web
-# Agent 容器将在后续添加
-
 services:
-  # ============================================
-  # Synapse Matrix Homeserver
-  # ============================================
   synapse:
     image: matrixdotorg/synapse:latest
     container_name: clawteam-synapse
@@ -13,8 +6,7 @@ services:
     ports:
       - "${SYNAPSE_PORT:-8008}:8008"
     volumes:
-      - synapse-data:/data
-      - ./configs/synapse/homeserver.yaml:/data/homeserver.yaml:ro
+      - ./volumes/synapse-data:/data:rw
     networks:
       - clawteam-network
     healthcheck:
@@ -24,9 +16,6 @@ services:
       retries: 3
       start_period: 30s
 
-  # ============================================
-  # Element Web (Matrix Client)
-  # ============================================
   element:
     image: vectorim/element-web:latest
     container_name: clawteam-element
@@ -34,7 +23,7 @@ services:
     ports:
       - "${ELEMENT_PORT:-10001}:80"
     volumes:
-      - element-config:/etc/element:ro
+      - ./configs/element/config.json:/usr/share/nginx/html/config.json:ro
     environment:
       - SERVER_NAME=${SYNAPSE_SERVER_NAME:-localhost}
       - ELEMENT_WEB_URL=http://localhost:${SYNAPSE_PORT:-8008}
@@ -47,26 +36,4 @@ networks:
   clawteam-network:
     driver: bridge
 
-# ============================================
-# 存储卷配置
-# ============================================
-# 注意: volumes/ 目录在 .gitignore 中被排除
-# 备份脚本位于: scripts/volumes/backup.sh
-
-volumes:
-  # Synapse Matrix 数据
-  # 备份路径: volumes/synapse-data/
-  synapse-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/volumes/synapse-data
-
-  # Element Web 配置
-  element-config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/volumes/element-config
+volumes: {}
