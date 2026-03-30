@@ -4,7 +4,7 @@ services:
     container_name: clawteam-synapse
     restart: unless-stopped
     ports:
-      - "${SYNAPSE_PORT:-8008}:8008"
+      - "127.0.0.1:8008:8008"
     volumes:
       - ./volumes/synapse-data:/data:rw
     networks:
@@ -21,7 +21,7 @@ services:
     container_name: clawteam-element
     restart: unless-stopped
     ports:
-      - "${ELEMENT_PORT:-10001}:80"
+      - "127.0.0.1:10001:80"
     volumes:
       - ./configs/element/config.json:/usr/share/nginx/html/config.json:ro
     environment:
