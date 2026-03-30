@@ -92,10 +92,17 @@
 
 ### ✅ MVP + Agent + Matrix 连接 + 配置持久化完成！
 
-### SPEC-021: 多 Agent 协作测试 ⏳
-- **状态**: 提案已创建，待审阅
-- **目标**: 测试 Manager Agent 任务分配和 Agent 间协作
-- **Artifacts**: proposal.md, design.md, specs, tasks.md
+### SPEC-021: 多 Agent 协作测试 🔍
+- **状态**: 测试完成，发现架构限制
+- **完成时间**: 2026-03-30 09:15
+- **测试结果**:
+  - Agent 连接 Matrix ✅
+  - Agent 不自动响应 Matrix 消息 ❌
+  - Gateway RPC 可调用 ✅
+- **关键发现**: OpenClaw Agent 是 CLI/Gateway 驱动的，不是传统 bot
+  - Matrix channel 用于发送通知，不用于接收指令
+  - 需要通过 `openclaw agent` 命令显式调用
+  - Session 管理是显式的，不是自动创建的
 
 ## 当前状态
 - Synapse ✅ (端口 127.0.0.1:8008)
@@ -104,6 +111,7 @@
 - OpenClaw Agent Matrix channel ✅ (running)
 - OpenClaw 配置持久化 ✅ (volume mount)
 - 所有用户已初始化 ✅
+- **新发现**: OpenClaw Agent 不支持 Matrix 消息自动响应 ⚠️
 
 ---
 
