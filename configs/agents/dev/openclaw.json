@@ -28,7 +28,23 @@
       "enabled": true,
       "homeserver": "http://synapse:8008",
       "userId": "@openclaw-agent-dev:localhost",
-      "deviceName": "openclaw-agent-dev"
+      "deviceName": "openclaw-agent-dev",
+      "allowBots": "mentions",
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [
+        "@human:localhost",
+        "@manager:localhost",
+        "@arch:localhost",
+        "@dev:localhost",
+        "@qa:localhost",
+        "@sre:localhost",
+        "@research:localhost"
+      ],
+      "groups": {
+        "!zfNrpyWgojlkJcigrf:localhost": {
+          "requireMention": true
+        }
+      }
     }
   },
   "plugins": {

@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
 > 由 灵犀 维护
-> 最后更新：2026-03-30 12:37
+> 最后更新：2026-03-30 13:05
 
 ---
 
@@ -37,10 +37,11 @@
 | 021 | 多 Agent 协作测试 | 5b2fa27 | 09:25 |
 | 022 | Dev Agent 部署 | — | 09:30 |
 | 023 | Matrix 房间配置 | eca996f | 11:37 |
+| 024 | Agent @mention 配置 | — | 13:05 |
 
 ---
 
-## 服务状态（2026-03-30 11:46）
+## 服务状态（2026-03-30 13:05）
 
 | 服务 | 状态 | 端口 |
 |------|------|------|
@@ -53,10 +54,11 @@
 
 ## 重要架构发现
 
-OpenClaw Agent 是 **Gateway-first** 架构，不是传统 Matrix bot：
+OpenClaw Agent 是 **Gateway-first** 架构：
 - Matrix channel 用于**发送通知**
 - 指令通过 **Gateway RPC** 接收（`openclaw agent` 命令显式调用）
-- Session 管理是显式的，不自动响应 @mention
+- **SPEC-024**: 配置 `groupPolicy: allowlist` + `requireMention: true`，Agent 自动响应 @mention
+- Session 管理是显式的，@mention 是主要人机交互方式
 
 ---
 
