@@ -1,7 +1,7 @@
 # Claw Team 项目追踪器
 
-> 由 sub-agent clawteam-monitor 维护
-> 最后更新：2026-03-30 09:26
+> 由 灵犀 维护
+> 最后更新：2026-03-30 10:36
 
 ---
 
@@ -15,148 +15,81 @@
 
 ---
 
-## 执行计划
+## SPEC 执行计划（全部完成 ✅）
 
-### SPEC-001: init-project ✅
-- **状态**: 已完成
-- **负责人**: Claude Code
-- **目标**: 建立项目基础结构
-- **交付物**: 目录结构、Makefile、.env.example、.gitignore
-- **提交**: d25a8de - feat: init project structure with Makefile, .env.example, .gitignore
-- **完成时间**: 2026-03-30 02:22
-
-### SPEC-002: docker-compose ✅
-- **状态**: 已完成
-- **提交**: d276f8f
-- **完成时间**: 2026-03-30 02:23
-
-### SPEC-003: conduit-matrix ✅
-- **状态**: 已完成
-- **提交**: ab561cc
-- **完成时间**: 2026-03-30 02:25
-
-### SPEC-004: storage-volumes ✅
-- **提交**: f32205c
-
-### SPEC-005~010: Agent 配置（6个Agent） ✅
-- Manager: 2d9d255 | Arch: fe366ef | Dev/QA/SRE/Research: a683ed2
-- **安全修复**: fac2260（移除硬编码密码、禁用注册）
-
-### SPEC-011~015 ✅
-- SPEC-011: 7d5b0df | SPEC-012: 6a36067 | SPEC-013: 16f8ce6 | SPEC-014: 49d2a51 | SPEC-015: 9621372
-
-### SPEC-016: Element Web UI 集成 ✅
-- **提交**: 6c9685b
-- **完成时间**: 2026-03-30 08:20
-- **验证**: Element Web 正确指向 localhost:8008，端口 10001 可访问
-
-### SPEC-017: 端口安全加固 ✅
-- **提交**: [pending push]
-- **完成时间**: 2026-03-30 08:21
-- **内容**: docker-compose.yml 绑定 127.0.0.1，docs/security.md 安全文档
-- **用户初始化**: manager, arch, dev, qa, sre, research, human 全部创建成功
-
-### SPEC-018: OpenClaw Agent Manager 集成 ✅
-- **状态**: 已完成
-- **完成时间**: 2026-03-30 08:37
-- **内容**:
-  - docker-compose.yml 添加 openclaw-agent-manager 服务
-  - 使用镜像 `ghcr.io/openclaw/openclaw:main-slim`
-  - 配置 MATRIX_HOMESERVER, AGENT_ID, AGENT_PASSWORD, OPENCLAW_API_KEY
-  - volume 挂载 configs/agents/manager/:/app/agent
-  - 网络使用 clawteam-network
-  - 依赖 Synapse health check
-  - healthcheck: openclaw gateway status
-- **验证**: 服务 healthy ✅
-
-### SPEC-019: OpenClaw Agent Matrix 连接测试 ✅
-- **状态**: 已完成
-- **完成时间**: 2026-03-30 08:52
-- **内容**:
-  - 启用 `@openclaw/matrix` 插件
-  - 配置 `allowPrivateNetwork: true`（Docker 网络支持）
-  - 创建 `openclaw-agent` 用户并注册到 Synapse
-  - Matrix channel 状态: running ✅
-  - 添加测试脚本 `tests/matrix/test-connection.sh`
-- **验证**: Agent 成功连接 Synapse ✅
-
-### SPEC-020: Matrix channel 配置持久化 ✅
-- **状态**: 已完成
-- **完成时间**: 2026-03-30 09:05
-- **内容**:
-  - 添加 volume 挂载 `volumes/openclaw-data:/home/node/.openclaw:rw`
-  - 添加 `configs/agents/manager/openclaw.json` 配置文件
-  - 添加 `scripts/openclaw-matrix-init.sh` 初始化脚本
-  - 更新 docker-compose.yml 环境变量
-- **验证**: 容器重启后配置保持 ✅
-
-### ✅ MVP + Agent + Matrix 连接 + 配置持久化完成！
-
-### SPEC-021: 多 Agent 协作测试 🔍
-- **状态**: 测试完成，发现架构限制
-- **完成时间**: 2026-03-30 09:15
-- **测试结果**:
-  - Agent 连接 Matrix ✅
-  - Agent 不自动响应 Matrix 消息 ❌
-  - Gateway RPC 可调用 ✅
-- **关键发现**: OpenClaw Agent 是 CLI/Gateway 驱动的，不是传统 bot
-  - Matrix channel 用于发送通知，不用于接收指令
-  - 需要通过 `openclaw agent` 命令显式调用
-  - Session 管理是显式的，不是自动创建的
-
-## 当前状态
-- Synapse ✅ (端口 127.0.0.1:8008)
-- Element Web ✅ (端口 127.0.0.1:10001)
-- OpenClaw Agent Manager ✅ (服务 healthy)
-- OpenClaw Agent Matrix channel ✅ (running)
-- OpenClaw 配置持久化 ✅ (volume mount)
-- 所有用户已初始化 ✅
-- **新发现**: OpenClaw Agent 不支持 Matrix 消息自动响应 ⚠️
+| SPEC | 名称 | 提交 | 完成时间 |
+|------|------|------|----------|
+| 001 | init-project | d25a8de | 02:22 |
+| 002 | docker-compose | d276f8f | 02:23 |
+| 003 | conduit-matrix | ab561cc | 02:25 |
+| 004 | storage-volumes | f32205c | 02:25 |
+| 005~010 | Agent configs（6个） | 2d9d255, fe366ef, a683ed2, fac2260 | 02:28 |
+| 011 | human-agent-protocol | 7d5b0df | 02:28 |
+| 012 | deployment-guide | 6a36067 | 02:28 |
+| 013 | smoke-tests | 16f8ce6 | 02:28 |
+| 014 | e2e-tests | 49d2a51 | 02:28 |
+| 015 | demo-project | 9621372 | 02:28 |
+| 016 | Element Web UI 集成 | 6c9685b | 08:20 |
+| 017 | 端口安全加固 | pending | 08:21 |
+| 018 | OpenClaw Agent Manager 集成 | f175d3a, 099cef1 | 08:40 |
+| 019 | OpenClaw Agent Matrix 连接 | 015b808, 76d8141 | 09:04 |
+| 020 | Matrix channel 配置持久化 | 83d764c | 09:17 |
+| 021 | 多 Agent 协作测试 | 5b2fa27 | 09:25 |
+| 022 | Dev Agent 部署 | — | 09:30 |
 
 ---
 
-## 任务队列
+## 服务状态（2026-03-30 10:36）
 
-| 序号 | 任务 | 状态 | 备注 |
-|------|------|------|------|
-| 1 | SPEC-001: init-project | ✅ 已完成 | 创建目录结构、Makefile、.env.example |
-| 2 | SPEC-002: docker-compose | ✅ 已完成 | d276f8f |
-| 3 | SPEC-003: conduit-matrix | ✅ 已完成 | ab561cc |
-| 4 | SPEC-004: storage-volumes | ✅ 已完成 | f32205c |
-| 5 | SPEC-005~010: Agent configs | ✅ 已完成 | 3 commits |
-| 6 | SPEC-011: human-agent-protocol | ✅ 已完成 | 7d5b0df |
-| 7 | SPEC-012: deployment-guide | ✅ 已完成 | 6a36067 |
-| 8 | SPEC-013: smoke-tests | ✅ 已完成 | 16f8ce6 |
-| 9 | SPEC-014: e2e-tests | ✅ 已完成 | 49d2a51 |
-| 10 | SPEC-015: demo-project | ✅ 已完成 | 9621372 |
+| 服务 | 状态 | 端口 |
+|------|------|------|
+| Synapse (Matrix HS) | ✅ healthy | 127.0.0.1:8008 |
+| Element Web | ✅ healthy | 127.0.0.1:10001 |
+| OpenClaw Agent Manager | ✅ healthy, Matrix running | container |
+| OpenClaw Agent Dev | ✅ healthy, Matrix running | container |
 
 ---
 
-## 当前指令
+## 重要架构发现
 
-当 Claude Code 空闲时，发送：
-```
-请执行 SPEC-001 init-project：
-1. 创建目录结构（configs/agents/{manager,arch,dev,qa,sre,research}, configs/matrix, volumes/{openclaw-config,openclaw-data,conduit-data}, tests/{smoke,e2e}）
-2. 创建 Makefile（包含 build, up, down, logs, test-smoke, test-e2e 等目标）
-3. 创建 .env.example（包含必要的环境变量模板）
-4. 创建 .gitignore（包含 .env, volumes/, .DS_Store 等）
-5. 提交并推送
-```
+OpenClaw Agent 是 **Gateway-first** 架构，不是传统 Matrix bot：
+- Matrix channel 用于**发送通知**
+- 指令通过 **Gateway RPC** 接收（`openclaw agent` 命令显式调用）
+- Session 管理是显式的，不自动响应 @mention
 
 ---
 
-## 进展日志
+## 待主公裁决：架构方向
 
-### 2026-03-30 02:28
-- **SPEC-001~SPEC-015 全部完成！**
-- sub-agent 监控并推动 Claude Code 持续执行，所有 15 个 SPEC 均已创建并推送
-- 总计 16 个 commits（含初始 overview 和 execution plan）
+| 方案 | 描述 | 推荐 |
+|------|------|------|
+| A: Gateway-first | Human → Gateway API → Agent → Matrix 通知 | ✅ 推荐 |
+| B: Matrix bot 改造 | 引入 mautrix/matrix-bot-sdk，实现真正 bot 行为 | 待裁决 |
 
-### 2026-03-30 02:21
-- 项目初始化完成（overview.md, execution-plan.md）
-- CLAUDE.md 已配置
-- 灵犀已接入，持续监控机制建立
+---
+
+## 错误记录
+
+### 10:36 - 主机 openclaw CLI 依赖缺失
+- **问题**: Claude Code 在主机 macOS 运行 `openclaw channels add`
+- **根因**: 主机 OpenClaw CLI 缺少 `@vector-im/matrix-bot-sdk`，且 `mkdir '/openclaw'` 指向根目录
+- **修复**: 更新 `CLAUDE.md`，禁止主机运行 openclaw CLI，所有操作必须在 Docker 容器内执行
+
+### 09:26 - Claude Code 幻觉事件
+- 伪造"主公已裁决"消息，已纠正
+
+### 06:55 - Synapse Exit(2)
+- homeserver.yaml 缩进错误 + contexts→names API 变更
+- 修复：94fe00e，API 验证通过
+
+---
+
+## 协作约定
+
+- 灵犀（我）↔ Claude Code：技术讨论伙伴
+- 重大决策（架构方向）需通知主公
+- 每30分钟向主公同步进展（飞书）
+- 5分钟无响应 → 自行与 Claude Code 讨论决定
 
 ---
 
@@ -171,130 +104,13 @@
 
 **重要：每个 SPEC 在 apply 前必须经过灵犀审阅**
 
-## 审阅标准
+---
 
-每个任务必须参考业界最佳实践：
+## 审阅标准
 
 | 领域 | 参考标准 |
 |------|----------|
 | Docker Compose | 官方最佳实践、healthcheck、depends_on + condition |
-| Matrix | Conduit vs Synapse API 能力对比 |
 | Shell 脚本 | set -euo pipefail、shellcheck |
 | 架构 | 12-Factor App 原则 |
 | 安全 | CIS Docker Benchmark、OWASP Top 10 |
-| 备份 | 3-2-1 原则 |
-
-## 当前阻塞
-
-~~SPEC-002（docker-compose）、SPEC-003（conduit-matrix）存在严重问题，需重构：~~
-~~1. 密码硬编码~~ ✅ 已移除（fac2260）
-~~2. API 不兼容（Synapse vs Conduit）~~ ✅ 已切换 Synapse 并修复
-~~3. 缺少 Element Web 服务~~ ⚠️ 待补充
-~~4. 端口暴露未加固~~ ⚠️ 待补充
-~~Synapse Exit(2)~~ ✅ 已修复（94fe00e）
-
-**当前阻塞：**
-- Element Web UI 服务未集成
-- 端口暴露安全加固待完成
-
-## 进展日志
-
-### 2026-03-30 07:30
-- **Synapse 配置修复完成**（commit 94fe00e）：
-  - 创建 `configs/synapse/homeserver.yaml`（替代环境变量配置）
-  - 修复 YAML 缩进错误（pepper/ACME）
-  - 修复 `contexts` → `names`（Synapse API 变更）
-  - 添加 `media_store_path` 绝对路径
-  - 启用 `enable_registration_without_verification`
-  - docker-compose.yml 改用直接 bind mount
-  - ✅ API 验证通过（r0.0.1 ~ v1.11）
-- **当前状态：** Synapse 运行中，等待下一步指令
-
-## 协作约定
-
-- 灵犀（我）↔ Claude Code：技术讨论伙伴
-- 我负责监控、讨论、推动、审阅
-- 重大决策（架构方向）需通知用户
-- 每30分钟向用户同步进展（飞书）
-- 5分钟无响应 → 自行与 Claude Code 讨论决定
-
-### 2026-03-30 06:55 - Synapse 启动修复
-**问题：** Synapse Exit(2)，配置挂载与数据卷冲突 + 多处配置错误
-
-**修复内容：**
-1. `pepper:` 缩进错误（1空格→2空格）
-2. `ACME:` 缩进错误（1空格→0空格）
-3. `contexts` → `names`（Synapse API 变更）
-4. 添加 `media_store_path: "/data/media_store"`（绝对路径）
-5. 添加 `enable_registration_without_verification: true`
-6. docker-compose.yml 改用直接 bind mount（`./volumes/synapse-data:/data:rw`）替代 named volume + driver_opts
-
-**结果：** ✅ Synapse healthy，API 正常响应（r0.0.1 ~ v1.11）
-
-### SPEC-018: OpenClaw Agent Manager 集成 ✅
-- **提交**: f175d3a (服务添加) + 099cef1 (healthcheck 修复)
-- **完成时间**: 2026-03-30 08:40
-- **内容**:
-  - docker-compose.yml 添加 openclaw-agent-manager 服务
-  - 使用镜像 `ghcr.io/openclaw/openclaw:main-slim`
-  - 配置 MATRIX_HOMESERVER, AGENT_ID, AGENT_PASSWORD, OPENCLAW_API_KEY
-  - volume 挂载 configs/agents/manager/:/app/agent
-  - 网络使用 clawteam-network
-  - 依赖 Synapse health check
-  - healthcheck: openclaw gateway status
-- **验证**: 3个服务全部 healthy ✅
-
-### ✅ MVP + Agent Manager 完成！
-
-## 当前状态
-- Synapse ✅ (端口 127.0.0.1:8008)
-- Element Web ✅ (端口 127.0.0.1:10001)
-- OpenClaw Agent Manager ✅ (服务 healthy)
-- 所有用户已初始化 ✅
-
-### SPEC-018: OpenClaw Agent Manager 部署 ✅
-- **提交**: 099cef1, f175d3a
-- **完成时间**: 2026-03-30 08:39
-- **内容**: docker-compose.yml 添加 openclaw-agent-manager 服务，healthcheck 配置
-
-### SPEC-019: OpenClaw Agent Matrix 连接验证 ✅
-- **提交**: 015b808, 76d8141
-- **完成时间**: 2026-03-30 09:04
-- **内容**: Matrix channel 运行成功，Agent 登录 Synapse 成功
-- **关键发现**: Docker 网络中 Synapse 必须设置 `allowPrivateNetwork: true`
-
-### SPEC-020: Matrix channel 配置持久化 ✅
-- **提交**: 83d764c
-- **完成时间**: 2026-03-30 09:17
-- **内容**: volumes/openclaw-data/ 持久化，openclaw-matrix-init.sh 初始化脚本
-
-### SPEC-021: 多 Agent 协作测试 ✅
-- **提交**: 5b2fa27
-- **完成时间**: 2026-03-30 09:25
-- **重要架构发现**: OpenClaw Agent 不是传统 Matrix bot，不自动响应 @mention。需通过 Gateway RPC 交互。
-- **影响**: Matrix channel 用于发送通知，Gateway RPC 用于接收指令
-
-### SPEC-022: Dev Agent 部署 ✅
-- **状态**: 已完成
-- **完成时间**: 2026-03-30 09:30
-- **内容**:
-  - docker-compose.yml 添加 openclaw-agent-dev 服务
-  - 创建 configs/agents/dev/ 配置文件
-  - Dev Agent Matrix channel: running ✅
-  - volumes/openclaw-dev-data/ 持久化配置
-
-## 架构决策待确认
-
-**核心问题**: OpenClaw Agent 不自动响应 Matrix 消息
-
-| 方案 | 描述 | 推荐 |
-|------|------|------|
-| A: Gateway-first | Human → Gateway API → Agent → Matrix 通知 | ✅ 推荐 |
-| B: Matrix bot 改造 | 引入 mautrix/matrix-bot-sdk，实现真正 bot 行为 | 待主公裁决 |
-
-## 服务状态（2026-03-30 09:30）
-- Synapse ✅ healthy
-- Element Web ✅ healthy
-- OpenClaw Agent Manager ✅ healthy, Matrix channel running
-- OpenClaw Agent Dev ✅ healthy, Matrix channel running
-- **⚠️ 幻觉事件**: Claude Code 09:26 产生幻觉（伪造"主公已裁决"消息），已纠正
