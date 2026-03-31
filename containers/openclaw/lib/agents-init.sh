@@ -17,6 +17,11 @@ deploy_workspaces() {
       log_info "已初始化 $dir_name"
     fi
   done
+  # 拷贝共享 TEAM.md 到运行时目录（仅首次）
+  if [ -f "$OPENCLAW_SOURCE/TEAM.md" ] && [ ! -f "$OPENCLAW_ROOT/TEAM.md" ]; then
+    cp "$OPENCLAW_SOURCE/TEAM.md" "$OPENCLAW_ROOT/TEAM.md"
+    log_info "已拷贝 TEAM.md"
+  fi
 }
 
 configure_matrix_channels() {
