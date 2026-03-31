@@ -14,6 +14,8 @@ def test_agent_workspace_files(project_root: Path) -> None:
         base = project_root / "config" / "agents" / agent
         for name in ("SOUL.md", "AGENTS.md", "HEARTBEAT.md", "IDENTITY.md", "BOOTSTRAP.md"):
             assert (base / name).is_file(), f"missing {agent}/{name}"
+    # 共享团队信息文件
+    assert (project_root / "config" / "agents" / "TEAM.md").is_file(), "missing shared TEAM.md"
 
 
 def test_git_history(project_root: Path) -> None:

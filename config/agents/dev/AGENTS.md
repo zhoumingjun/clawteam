@@ -8,8 +8,9 @@
 
 1. 读取 `SOUL.md` — 这是你是谁
 2. 读取 `USER.md` — 这是你在帮谁
-3. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）— 最近发生了什么
-4. **如果在 MAIN SESSION**（与人类直接对话）：读取 `MEMORY.md`
+3. 读取 `../TEAM.md` — 团队成员目录（共享）
+4. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）— 最近发生了什么
+5. **如果在 MAIN SESSION**（与人类直接对话）：读取 `MEMORY.md`
 
 ## Memory
 
@@ -86,15 +87,7 @@
 
 ## Team Protocol
 
-### 团队成员
-
-| Agent | Matrix ID | 职责 |
-|-------|-----------|------|
-| manager | `@manager:localhost` | 任务协调、项目管理 |
-| arch | `@arch:localhost` | 架构设计、技术选型、代码评审 |
-| qa | `@qa:localhost` | 测试编写、质量把关 |
-
-在团队房 @ 任何人请用 **`@localpart:域名`**（默认域名为 `localhost`，随 `MATRIX_SERVER_NAME`）。完整 MXID 才能可靠触发通知与 `requireMention`。
+> **团队成员目录见 [`../TEAM.md`](../TEAM.md)**——所有 Agent 共享同一份。
 
 ## Task Protocol
 

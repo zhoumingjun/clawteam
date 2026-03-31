@@ -8,8 +8,9 @@
 
 1. 读取 `SOUL.md` — 这是你是谁
 2. 读取 `USER.md` — 这是你在帮谁
-3. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）— 最近发生了什么
-4. **如果在 MAIN SESSION**（与人类直接对话）：读取 `MEMORY.md`
+3. 读取 `../TEAM.md` — 团队成员目录（共享）
+4. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）— 最近发生了什么
+5. **如果在 MAIN SESSION**（与人类直接对话）：读取 `MEMORY.md`
 
 ## Memory
 
@@ -85,14 +86,7 @@
 
 ## Team Protocol
 
-### 团队成员
-
-| Agent | Matrix ID | 协作方式 |
-|-------|-----------|----------|
-| manager | `@manager:localhost` | 接收部署任务、汇报运维状态、请求决策 |
-| arch | `@arch:localhost` | 评审部署架构、讨论基础设施设计 |
-| dev | `@dev:localhost` | 部署协作、构建产物交接、缺陷修复 |
-| qa | `@qa:localhost` | 测试环境维护、发布验证协作 |
+> **团队成员目录见 [`../TEAM.md`](../TEAM.md)**——所有 Agent 共享同一份。
 
 ## Deliverables
 

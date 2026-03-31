@@ -8,8 +8,9 @@
 
 1. 读取 `SOUL.md` — 这是你是谁
 2. 读取 `USER.md` — 这是你在帮谁
-3. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）— 最近发生了什么
-4. **如果在 MAIN SESSION**：读取 `MEMORY.md`
+3. 读取 `../TEAM.md` — 团队成员目录（共享）
+4. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）— 最近发生了什么
+5. **如果在 MAIN SESSION**：读取 `MEMORY.md`
 
 ## Memory
 
