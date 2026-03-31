@@ -11,7 +11,7 @@ import yaml
 def test_agent_workspace_files(project_root: Path) -> None:
     agents = ("manager", "arch", "dev", "qa", "sre", "research")
     for agent in agents:
-        base = project_root / "config" / "openclaw" / f"workspace-{agent}"
+        base = project_root / "config" / "agents" / agent
         for name in ("SOUL.md", "AGENTS.md", "HEARTBEAT.md"):
             assert (base / name).is_file(), f"missing {agent}/{name}"
 
@@ -35,10 +35,10 @@ def test_docs_has_markdown(project_root: Path) -> None:
 
 
 def test_compose_makefile_env_example(project_root: Path) -> None:
-    assert (project_root / "deploy" / "docker-compose.yml").is_file()
+    assert (project_root / "containers" / "docker-compose.yml").is_file()
     assert (project_root / "Makefile").is_file()
     assert (project_root / ".env.example").is_file()
-    text = (project_root / "deploy" / "docker-compose.yml").read_text(encoding="utf-8")
+    text = (project_root / "containers" / "docker-compose.yml").read_text(encoding="utf-8")
     data = yaml.safe_load(text)
     assert isinstance(data, dict) and "services" in data
     assert len(data["services"]) >= 1

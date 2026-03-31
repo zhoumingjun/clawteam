@@ -40,7 +40,7 @@ def test_compose_at_least_one_service_up(project_root: Path) -> None:
             "docker",
             "compose",
             "-f",
-            "deploy/docker-compose.yml",
+            "containers/docker-compose.yml",
             "--env-file",
             ".env",
             "ps",

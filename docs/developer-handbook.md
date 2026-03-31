@@ -22,7 +22,7 @@ Element ──► Tuwunel (C-S API) ◄──► OpenClaw (多 Matrix 账号 + G
 
 ### 1.2 启动脚本职责
 
-`openclaw/openclaw-startup.sh`（由 Compose 挂载进容器）大致顺序：
+`containers/openclaw/entrypoint.sh`（由 Compose 挂载进容器）大致顺序：
 
 1. 等 Matrix homeserver（Tuwunel）HTTP 就绪  
 2. 确保各账号密码文件 / Human 密码  
@@ -35,7 +35,7 @@ Element ──► Tuwunel (C-S API) ◄──► OpenClaw (多 Matrix 账号 + G
 
 | 位置 | 性质 |
 |------|------|
-| `config/openclaw/**` | 版本化的 workspace **模板**，只读挂进容器 |
+| `config/agents/**` | 版本化的 workspace **模板**，只读挂进容器 |
 | `volumes/openclaw/**` | **运行态**（`openclaw.json`、sessions、拷入的 workspace） |
 
 改模板后常需重启或让启动逻辑重新部署 workspace；改运行态后注意不要被下次启动覆盖。
@@ -46,11 +46,11 @@ Element ──► Tuwunel (C-S API) ◄──► OpenClaw (多 Matrix 账号 + G
 
 | 目录 | 内容 |
 |------|------|
-| `deploy/` | `docker-compose.yml`（Tuwunel + OpenClaw）、`Dockerfile.openclaw`、`Dockerfile.synapse`（遗留）、`patch-*.mjs`、mention 注入 JS |
-| `platform/` | `deploy.sh`、`matrix-ensure-user.py`、`sync-synapse-config.sh`（已无操作）、卷备份恢复 |
-| `openclaw/` | 容器入口 `openclaw-startup.sh` |
-| `matrix/` | 密码同步、团队房 bootstrap、mention 相关 E2E |
-| `config/openclaw/` | 各 `workspace-*/` Markdown |
+| `containers/` | `docker-compose.yml`（Tuwunel + OpenClaw）、`Dockerfile.openclaw`、`Dockerfile.synapse`（遗留）、`patch-*.mjs`、mention 注入 JS |
+| `devops/` | `deploy.sh`、`matrix-ensure-user.py`、`sync-synapse-config.sh`（已无操作）、卷备份恢复 |
+| `containers/openclaw/` | 容器入口 `entrypoint.sh` |
+| `matrix/` | mention 相关 E2E |
+| `config/agents/` | 各 `workspace-*/` Markdown |
 | `tests/` | pytest（栈健康、Matrix API 等） |
 
 ---
@@ -59,25 +59,25 @@ Element ──► Tuwunel (C-S API) ◄──► OpenClaw (多 Matrix 账号 + G
 
 ### 3.1 只改 Agent 行为 / 提示词
 
-1. 编辑 `config/openclaw/workspace-*/AGENTS.md`（或 `SOUL.md` 等）。  
-2. 重启 OpenClaw，或依赖启动脚本是否从模板覆盖 volume（以 `openclaw-startup.sh` 当前逻辑为准）。  
+1. 编辑 `config/agents/workspace-*/AGENTS.md`（或 `SOUL.md` 等）。
+2. 重启 OpenClaw，或依赖启动脚本是否从模板覆盖 volume（以 `entrypoint.sh` 当前逻辑为准）。  
 3. 在 Element 里 **@ 对应角色** 手测。
 
 ### 3.2 改 Tuwunel
 
-1. 编辑 **`deploy/docker-compose.yml`** 中 `tuwunel.environment`，或挂载自写 `tuwunel.toml`（见 [Tuwunel 配置](https://tuwunel.chat/configuration.html)）。  
-2. `docker compose -f deploy/docker-compose.yml --env-file .env up -d tuwunel`。  
+1. 编辑 **`containers/docker-compose.yml`** 中 `tuwunel.environment`，或挂载自写 `tuwunel.toml`（见 [Tuwunel 配置](https://tuwunel.chat/configuration.html)）。
+2. `docker compose -f containers/docker-compose.yml --env-file .env up -d tuwunel`。  
 3. 勿与旧 `homeserver.yaml` 混用；遗留 Synapse 文件仅作参考。
 
 ### 3.3 改 OpenClaw 镜像（npm 版本、补丁）
 
-1. 编辑 `deploy/Dockerfile.openclaw`（如 `openclaw@` 版本）。  
-2. 编辑 `deploy/patch-*.mjs` / `openclaw-matrix-mentions-inject.js`（锚点随上游 bundle 变化可能失效）。  
-3. `docker compose -f deploy/docker-compose.yml --env-file .env build openclaw --no-cache` 后 `up -d` 或走 `make deploy`。
+1. 编辑 `containers/Dockerfile.openclaw`（如 `openclaw@` 版本）。
+2. 编辑 `containers/patch-*.mjs` / `openclaw-matrix-mentions-inject.js`（锚点随上游 bundle 变化可能失效）。
+3. `docker compose -f containers/docker-compose.yml --env-file .env build openclaw --no-cache` 后 `up -d` 或走 `make deploy`。
 
 ### 3.4 改 Compose 环境变量
 
-改 `.env` 后通常 **`restart openclaw`**；改端口或卷挂载需评估 `platform/deploy.sh` 与文档中的路径。
+改 `.env` 后通常 **`restart openclaw`**；改端口或卷挂载需评估 `devops/deploy.sh` 与文档中的路径。
 
 ### 3.5 团队房间名（按项目）
 
@@ -112,7 +112,7 @@ make e2e-matrix
 
 ## 5. 手测清单（建议）
 
-在 **Element** 连接本机 Synapse，进入团队房：
+在 **Element** 连接本机 Tuwunel，进入团队房：
 
 | 步骤 | 操作 | 期望 |
 |------|------|------|
@@ -124,8 +124,8 @@ make e2e-matrix
 CLI 抽查：
 
 ```bash
-curl -sf "http://127.0.0.1:${SYNAPSE_PORT:-8008}/_matrix/client/versions"
-docker compose -f deploy/docker-compose.yml --env-file .env exec openclaw openclaw health
+curl -sf "http://127.0.0.1:${MATRIX_PORT:-8008}/_matrix/client/versions"
+docker compose -f containers/docker-compose.yml --env-file .env exec openclaw openclaw health
 ```
 
 ---

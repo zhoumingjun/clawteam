@@ -17,7 +17,7 @@
 
 ### 1.2 启动后系统为你做了什么
 
-1. **Tuwunel** 先就绪；`platform/deploy.sh` 用 Client API 按 `.env` 注册/登录人类与各 Agent 用户。
+1. **Tuwunel** 先就绪；`devops/deploy.sh` 用 Client API 按 `.env` 注册/登录人类与各 Agent 用户。
 2. **OpenClaw** 启动后：注册/刷新 Matrix 设备、写 **`volumes/openclaw/openclaw.json`**、把各 Agent 的 Matrix channel **绑定到同一团队房间**（房间名默认与配置相关，如「Claw Team」）。
 3. 脚本会尽量**自动接受邀请**（等价于你在 Element 里点「加入房间」）。若仍看不到房间，可用 `volumes/openclaw/.matrix-team-room-id` 手动加入。
 
@@ -63,7 +63,7 @@ cp .env.example .env
 | `HUMAN_PASSWORD` | 人类账号 `@human:<服务器名>` 的登录密码 |
 | `MANAGER_PASSWORD` 等 | 各 Agent 的 Matrix 密码；建议全部显式设置 |
 
-Homeserver 本地默认：`SYNAPSE_SERVER_NAME=localhost`、`SYNAPSE_PORT=8008`（变量名沿用历史）。细节以 `.env.example` 注释为准。
+Homeserver 本地默认：`MATRIX_SERVER_NAME=localhost`、`MATRIX_PORT=8008`（变量名沿用历史）。细节以 `.env.example` 注释为准。
 
 ---
 
@@ -80,19 +80,19 @@ make deploy     # 保留数据，重新 build/up
 确认 Tuwunel：
 
 ```bash
-curl -sS "http://127.0.0.1:${SYNAPSE_PORT:-8008}/_matrix/client/versions"
+curl -sS "http://127.0.0.1:${MATRIX_PORT:-8008}/_matrix/client/versions"
 ```
 
 确认容器：
 
 ```bash
-docker compose -f deploy/docker-compose.yml --env-file .env ps
+docker compose -f containers/docker-compose.yml --env-file .env ps
 ```
 
 改 **LLM 或 Matrix 密码** 后通常需要：
 
 ```bash
-docker compose -f deploy/docker-compose.yml --env-file .env restart openclaw
+docker compose -f containers/docker-compose.yml --env-file .env restart openclaw
 ```
 
 ---
@@ -101,16 +101,15 @@ docker compose -f deploy/docker-compose.yml --env-file .env restart openclaw
 
 1. 安装 [Element](https://element.io/) **桌面版**（浏览器连 `http://` Homeserver 易受混合内容限制）。
 2. Homeserver 填 **`http://127.0.0.1:8008`**（或你的端口）。
-3. 登录 **`@human:localhost`**（若改过 `SYNAPSE_SERVER_NAME`，域名与之一致），密码为 **`HUMAN_PASSWORD`**。
+3. 登录 **`@human:localhost`**（若改过 `MATRIX_SERVER_NAME`，域名与之一致），密码为 **`HUMAN_PASSWORD`**。
 4. 进入团队房间后，需要谁响应就 **@ 谁**（如 `@manager` / `@dev`）。plain 闲聊未 @ 时，Agent 通常不会回复。
 
 ### 6.1 登录或房间异常时
 
 按顺序尝试：
 
-1. `bash matrix/sync-all-matrix-passwords.sh`
-2. `bash matrix/matrix-bootstrap-team-room.sh`
-3. `docker compose -f deploy/docker-compose.yml --env-file .env restart openclaw`
+1. `make fresh`（清空 volumes 并重建全部服务与账号）
+2. `docker compose -f containers/docker-compose.yml --env-file .env restart openclaw`
 
 ---
 
@@ -119,14 +118,14 @@ docker compose -f deploy/docker-compose.yml --env-file .env restart openclaw
 主机直接跑 `openclaw` 可能缺 Matrix 依赖；请：
 
 ```bash
-docker compose -f deploy/docker-compose.yml --env-file .env exec openclaw openclaw --help
-docker compose -f deploy/docker-compose.yml --env-file .env exec openclaw openclaw health
+docker compose -f containers/docker-compose.yml --env-file .env exec openclaw openclaw --help
+docker compose -f containers/docker-compose.yml --env-file .env exec openclaw openclaw health
 ```
 
 查看日志：
 
 ```bash
-docker compose -f deploy/docker-compose.yml --env-file .env logs -f openclaw
+docker compose -f containers/docker-compose.yml --env-file .env logs -f openclaw
 ```
 
 ---
@@ -141,10 +140,10 @@ docker compose -f deploy/docker-compose.yml --env-file .env logs -f openclaw
 
 | 路径 | 说明 |
 |------|------|
-| `deploy/docker-compose.yml` | Compose 编排 |
+| `containers/docker-compose.yml` | Compose 编排 |
 | `volumes/tuwunel-data/` | Tuwunel 数据（勿提交） |
 | `volumes/openclaw/` | OpenClaw 与 `openclaw.json` |
-| `config/openclaw/` | Workspace 模板（只读挂载进容器） |
+| `config/agents/` | Workspace 模板（只读挂载进容器） |
 
 ---
 

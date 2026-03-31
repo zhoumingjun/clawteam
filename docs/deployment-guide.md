@@ -2,7 +2,7 @@
 
 本文档提供 Claw Team 的完整部署流程，涵盖开发环境搭建到生产环境加固。
 
-**当前 MVP**：Matrix 使用 **[Tuwunel](https://github.com/matrix-construct/tuwunel)**（`deploy/docker-compose.yml`，镜像 `ghcr.io/matrix-construct/tuwunel:v1.5.1`），OpenClaw 单容器。Synapse 数据**不可**原地迁移至 Tuwunel；切换请 **`make fresh`**。文中若仍有旧 Conduit / Synapse 表述，以本段为准。
+**当前 MVP**：Matrix 使用 **[Tuwunel](https://github.com/matrix-construct/tuwunel)**（`containers/docker-compose.yml`，镜像 `ghcr.io/matrix-construct/tuwunel:v1.5.1`），OpenClaw 单容器。Synapse 数据**不可**原地迁移至 Tuwunel；切换请 **`make fresh`**。文中若仍有旧 Conduit / Synapse 表述，以本段为准。
 
 ## 1. 环境要求
 
@@ -74,7 +74,7 @@ make logs
 
 ### 2.4 Matrix 用户与团队房
 
-在 `.env` 中设置 **`HUMAN_PASSWORD`** 与各 **`*_PASSWORD`** 后，执行 **`make fresh`** 或 **`make deploy`**：`platform/deploy.sh` 在 Tuwunel 就绪后用 Client API（`registration_token` = `SYNAPSE_REGISTRATION_SHARED_SECRET`）创建/登录用户，OpenClaw 启动脚本刷新 token、拉 Gateway、建/绑团队房。**已存在用户时无法在脚本中强制改密**（与旧 Synapse `register_new_matrix_user` 不同），改密请 `make fresh` 或在客户端操作。
+在 `.env` 中设置 **`HUMAN_PASSWORD`** 与各 **`*_PASSWORD`** 后，执行 **`make fresh`** 或 **`make deploy`**：`devops/deploy.sh` 在 Tuwunel 就绪后用 Client API（`registration_token` = `MATRIX_REGISTRATION_TOKEN`）创建/登录用户，OpenClaw 启动脚本刷新 token、拉 Gateway、建/绑团队房。**已存在用户时无法在脚本中强制改密**（与旧 Synapse `register_new_matrix_user` 不同），改密请 `make fresh` 或在客户端操作。
 
 ### 2.5 验证部署
 
@@ -86,17 +86,17 @@ make test-smoke
 echo "Tuwunel (Matrix): http://localhost:8008"
 ```
 
-推荐首次部署直接运行项目根目录 **`./platform/deploy.sh`**（将创建 `volumes/`、拉起 `deploy/docker-compose.yml` 定义的服务）。
+推荐首次部署直接运行项目根目录 **`./devops/deploy.sh`**（将创建 `volumes/`、拉起 `containers/docker-compose.yml` 定义的服务）。
 
 ### 2.6 Tuwunel 调优（限速、内存）
 
-Tuwunel 通过 **`TUWUNEL_*` 环境变量** 或挂载 `tuwunel.toml` 配置（见 [tuwunel.chat/configuration](https://tuwunel.chat/configuration.html)）。Rust 版 homeserver 默认通常比 Synapse 更耐本地多客户端并发；若仍遇 `M_LIMIT_EXCEEDED`，请查官方文档中的频率与超时相关项，并在 **`deploy/docker-compose.yml`** 的 `tuwunel.environment` 中追加变量后 `docker compose up -d tuwunel`。
+Tuwunel 通过 **`TUWUNEL_*` 环境变量** 或挂载 `tuwunel.toml` 配置（见 [tuwunel.chat/configuration](https://tuwunel.chat/configuration.html)）。Rust 版 homeserver 默认通常比 Synapse 更耐本地多客户端并发；若仍遇 `M_LIMIT_EXCEEDED`，请查官方文档中的频率与超时相关项，并在 **`containers/docker-compose.yml`** 的 `tuwunel.environment` 中追加变量后 `docker compose up -d tuwunel`。
 
 ## 3. 配置说明
 
 ### 3.1 .env 文件配置
 
-以仓库根目录 **`.env.example`** 为权威模板（**`SYNAPSE_SERVER_NAME`**、**`SYNAPSE_PORT`**、**`ANTHROPIC_API_KEY`** / **`MODEL_NAME`**、**`HUMAN_PASSWORD`**、各 agent 密码等）。当前栈为 **Synapse + OpenClaw**，无 Conduit 变量。
+以仓库根目录 **`.env.example`** 为权威模板（**`MATRIX_SERVER_NAME`**、**`MATRIX_PORT`**、**`ANTHROPIC_API_KEY`** / **`MODEL_NAME`**、**`HUMAN_PASSWORD`**、各 agent 密码等）。当前栈为 **Tuwunel + OpenClaw**，无 Conduit 变量。
 
 ### 3.2 敏感信息管理
 
@@ -118,7 +118,7 @@ Tuwunel 通过 **`TUWUNEL_*` 环境变量** 或挂载 `tuwunel.toml` 配置（�
 docker ps
 
 # 2. 检查端口占用
-lsof -i ":${SYNAPSE_PORT:-8008}"
+lsof -i ":${MATRIX_PORT:-8008}"
 lsof -i :8008
 
 # 3. 查看详细日志
@@ -140,27 +140,27 @@ docker compose logs
 
 **排查**:
 ```bash
-docker compose -f deploy/docker-compose.yml --env-file .env ps
-docker compose -f deploy/docker-compose.yml --env-file .env logs tuwunel
-curl -sf "http://127.0.0.1:${SYNAPSE_PORT:-8008}/_matrix/client/versions"
-docker compose -f deploy/docker-compose.yml --env-file .env exec openclaw \
+docker compose -f containers/docker-compose.yml --env-file .env ps
+docker compose -f containers/docker-compose.yml --env-file .env logs tuwunel
+curl -sf "http://127.0.0.1:${MATRIX_PORT:-8008}/_matrix/client/versions"
+docker compose -f containers/docker-compose.yml --env-file .env exec openclaw \
   curl -sf "http://tuwunel:8008/_matrix/client/versions"
 ```
 
-**常见处理**: 确认 `TUWUNEL_REGISTRATION_TOKEN` 与 `.env` 中 `SYNAPSE_REGISTRATION_SHARED_SECRET` 一致；账号问题执行 `bash matrix/sync-all-matrix-passwords.sh` 后重启 openclaw；顽固状态可 `make fresh`。
+**常见处理**: 确认 `TUWUNEL_REGISTRATION_TOKEN` 与 `.env` 中 `MATRIX_REGISTRATION_TOKEN` 一致；账号问题执行 `make fresh` 重建环境；顽固状态同样可 `make fresh`。
 
 ### 4.3 Matrix 客户端无法连接 Homeserver
 
-本仓库**不再**打包 Element Web。请使用自备客户端（如 Element），Homeserver URL 填 `http://localhost:8008`（与 `SYNAPSE_SERVER_NAME`、TLS 设置一致）。
+本仓库**不再**打包 Element Web。请使用自备客户端（如 Element），Homeserver URL 填 `http://localhost:8008`（与 `MATRIX_SERVER_NAME`、TLS 设置一致）。
 
 **排查步骤**:
 ```bash
 # 1. Tuwunel 是否响应
 curl -sf "http://localhost:8008/_matrix/client/versions"
 
-# 2. 容器与编排（compose 在 deploy/）
-docker compose -f deploy/docker-compose.yml --env-file .env ps
-docker compose -f deploy/docker-compose.yml --env-file .env logs tuwunel
+# 2. 容器与编排（compose 在 containers/）
+docker compose -f containers/docker-compose.yml --env-file .env ps
+docker compose -f containers/docker-compose.yml --env-file .env logs tuwunel
 ```
 
 ## 5. 生产环境加固
@@ -170,16 +170,16 @@ docker compose -f deploy/docker-compose.yml --env-file .env logs tuwunel
 #### 5.1.1 网络隔离
 
 ```yaml
-# 与 deploy/docker-compose.yml 一致：Tuwunel 仅绑定回环
+# 与 containers/docker-compose.yml 一致：Tuwunel 仅绑定回环
 services:
   tuwunel:
     ports:
       - "127.0.0.1:8008:8008"
 ```
 
-#### 5.1.2 Synapse 注册策略
+#### 5.1.2 注册策略
 
-生产环境请关闭公开注册，使用强 **`SYNAPSE_REGISTRATION_SHARED_SECRET`**，并按 [Synapse 文档](https://matrix-org.github.io/synapse/latest/setup/installation.html) 加固；勿依赖历史上的 Conduit 环境变量。
+生产环境请关闭公开注册，使用强 **`MATRIX_REGISTRATION_TOKEN`**，并按 [Tuwunel 文档](https://tuwunel.chat/configuration.html) 加固；勿依赖历史上的 Conduit 环境变量。
 
 #### 5.1.3 API Key 安全
 
@@ -222,7 +222,7 @@ server {
     ssl_certificate_key /path/to/key.pem;
 
     location / {
-        proxy_pass http://127.0.0.1:8008;  # Synapse Client-Server API
+        proxy_pass http://127.0.0.1:8008;  # Tuwunel Client-Server API
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -235,7 +235,7 @@ server {
 # 仅允许必要端口
 # ufw allow 22/tcp    # SSH
 # ufw allow 443/tcp   # HTTPS
-# ufw deny 8008/tcp   # 若 Synapse 仅应经反向代理暴露，可按需限制直连端口
+# ufw deny 8008/tcp   # 若 Tuwunel 仅应经反向代理暴露，可按需限制直连端口
 ```
 
 ### 5.3 监控配置
@@ -260,9 +260,9 @@ services:
 #### 5.3.2 健康检查
 
 ```yaml
-# 与 deploy/docker-compose.yml 中 synapse 服务类似
+# 与 containers/docker-compose.yml 中 tuwunel 服务类似
 services:
-  synapse:
+  tuwunel:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8008/_matrix/client/versions"]
       interval: 30s
@@ -333,10 +333,10 @@ make logs
 # 清理未使用的 Docker 资源
 docker system prune -f
 
-# 更新服务（编排文件在 deploy/）
+# 更新服务（编排文件在 containers/）
 git pull
-docker compose -f deploy/docker-compose.yml --env-file .env pull
-docker compose -f deploy/docker-compose.yml --env-file .env up -d
+docker compose -f containers/docker-compose.yml --env-file .env pull
+docker compose -f containers/docker-compose.yml --env-file .env up -d
 ```
 
 ### 6.2 版本升级
@@ -352,8 +352,8 @@ git pull
 vim .env
 
 # 4. 重启服务
-docker compose -f deploy/docker-compose.yml --env-file .env down
-docker compose -f deploy/docker-compose.yml --env-file .env up -d
+docker compose -f containers/docker-compose.yml --env-file .env down
+docker compose -f containers/docker-compose.yml --env-file .env up -d
 
 # 5. 验证
 make test-smoke
@@ -363,6 +363,6 @@ make test-smoke
 
 - [Docker 官方文档](https://docs.docker.com/)
 - [Docker Compose 官方文档](https://docs.docker.com/compose/)
-- [Synapse](https://matrix-org.github.io/synapse/latest/)
-- [Matrix 客户端 Element](https://element.io/)（自备，连接本机 Synapse）
+- [Tuwunel](https://tuwunel.chat/)
+- [Matrix 客户端 Element](https://element.io/)（自备，连接本机 Tuwunel）
 - [12-Factor App](https://12factor.net/)

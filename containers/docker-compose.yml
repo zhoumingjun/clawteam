@@ -1,0 +1,63 @@
+services:
+  # Matrix Homeserver — Tuwunel (Rust)
+  # https://github.com/matrix-construct/tuwunel
+  tuwunel:
+    image: ghcr.io/matrix-construct/tuwunel:v1.5.1
+    container_name: clawteam-tuwunel
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MATRIX_PORT:-8008}:8008"
+    volumes:
+      - ../volumes/tuwunel-data:/var/lib/tuwunel:rw
+    networks:
+      - clawteam-network
+    env_file:
+      - ../.env
+    environment:
+      TUWUNEL_SERVER_NAME: "${MATRIX_SERVER_NAME:-localhost}"
+      TUWUNEL_DATABASE_PATH: "/var/lib/tuwunel"
+      TUWUNEL_ADDRESS: '["0.0.0.0"]'
+      TUWUNEL_PORT: "8008"
+      TUWUNEL_ALLOW_REGISTRATION: "true"
+      TUWUNEL_REGISTRATION_TOKEN: "${MATRIX_REGISTRATION_TOKEN:-a-secret-key-change-in-production}"
+      TUWUNEL_ALLOW_FEDERATION: "${TUWUNEL_ALLOW_FEDERATION:-false}"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8008'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  # OpenClaw (Gateway + agents)
+  openclaw:
+    build:
+      context: openclaw
+      dockerfile: Dockerfile
+    image: clawteam-openclaw:latest
+    container_name: clawteam-openclaw
+    restart: unless-stopped
+    working_dir: /app
+    env_file:
+      - ../.env
+    command: ["/bin/bash", "/app/openclaw/entrypoint.sh"]
+    volumes:
+      - ./openclaw/entrypoint.sh:/app/openclaw/entrypoint.sh:ro
+      - ./openclaw/lib:/app/openclaw/lib:ro
+      - ../.env:/app/.env:ro
+      - ../config/agents:/app/.openclaw:ro
+      - ../volumes/openclaw:/root/.openclaw:rw
+    environment:
+      OPENCLAW_HOST: "0.0.0.0"
+      OPENCLAW_PORT: "18789"
+      MATRIX_SERVER_NAME: "${MATRIX_SERVER_NAME:-localhost}"
+      MATRIX_HOMESERVER_URL: "http://tuwunel:8008"
+      MATRIX_REGISTRATION_TOKEN: "${MATRIX_REGISTRATION_TOKEN:-a-secret-key-change-in-production}"
+    networks:
+      - clawteam-network
+    depends_on:
+      tuwunel:
+        condition: service_healthy
+
+networks:
+  clawteam-network:
+    driver: bridge

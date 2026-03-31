@@ -31,9 +31,9 @@ The `.claude/` directory contains:
 
 ### ⚠️ 重要：OpenClaw 操作必须在 Docker 容器内执行
 - **禁止**在主机（macOS）上运行 `openclaw` CLI
-- 所有 OpenClaw 操作（channels add、gateway、agent 等）应通过：`docker compose -f deploy/docker-compose.yml --env-file .env exec openclaw openclaw <command>`
+- 所有 OpenClaw 操作（channels add、gateway、agent 等）应通过：`docker compose -f containers/docker-compose.yml --env-file .env exec openclaw openclaw <command>`
 - 主机 OpenClaw CLI 缺少 Matrix 相关依赖时，可能导致插件失败
-- 日志：`docker compose -f deploy/docker-compose.yml --env-file .env logs -f openclaw`
+- 日志：`docker compose -f containers/docker-compose.yml --env-file .env logs -f openclaw`
 
 - Always use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - Follow industry best practices for every task:

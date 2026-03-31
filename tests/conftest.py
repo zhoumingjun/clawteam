@@ -20,10 +20,10 @@ def project_root() -> Path:
 
 @pytest.fixture(scope="session")
 def matrix_server() -> str:
-    base = os.environ.get("SYNAPSE_SERVER")
+    base = os.environ.get("MATRIX_SERVER")
     if base:
         return base.rstrip("/")
-    port = os.environ.get("SYNAPSE_PORT", "8008")
+    port = os.environ.get("MATRIX_PORT", "8008")
     return f"http://127.0.0.1:{port}"
 
 

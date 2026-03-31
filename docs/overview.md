@@ -108,7 +108,7 @@ Claw Team 旨在构建一个 **开箱即用的 AI 软件研发工厂**，通过�
 
 ### 4.3 工具链
 
-- **运行时**：Docker / Docker Compose（见 `Makefile`、`platform/deploy.sh`）。
+- **运行时**：Docker / Docker Compose（见 `Makefile`、`devops/deploy.sh`）。
 - **Python 测试**：[uv](https://docs.astral.sh/uv/) + pytest（`pyproject.toml`）。
 
 ### 4.4 安全约束
@@ -148,27 +148,27 @@ Claw Team 旨在构建一个 **开箱即用的 AI 软件研发工厂**，通过�
 
 ### 6.1 Docker Compose
 
-以仓库内 **`deploy/docker-compose.yml`** 为准，当前 MVP 仅包含 **`tuwunel`** 与 **`openclaw`** 两个服务；多 Agent 由 OpenClaw Gateway 在同一容器内调度，而非每角色独立容器。
+以仓库内 **`containers/docker-compose.yml`** 为准，当前 MVP 仅包含 **`tuwunel`** 与 **`openclaw`** 两个服务；多 Agent 由 OpenClaw Gateway 在同一容器内调度，而非每角色独立容器。
 
 ### 6.2 目录结构
 
 ```
 clawteam/
-├── deploy/
+├── containers/             # 容器定义 + 运行逻辑
 │   ├── docker-compose.yml
-│   ├── Dockerfile.synapse   # 遗留（Synapse）
-│   ├── Dockerfile.openclaw
-│   └── homeserver.yaml    # 遗留
-├── config/openclaw/    # 各 workspace-* Markdown 模板
-├── matrix/                 # Matrix 团队协作脚本（密码、团队房、mention E2E）
-├── openclaw/               # OpenClaw 容器入口等
-│   └── openclaw-startup.sh
-├── platform/               # 部署与基础设施
+│   └── openclaw/
+│       ├── Dockerfile
+│       ├── patches/
+│       ├── entrypoint.sh
+│       └── lib/
+├── config/agents/          # 各 Agent workspace 模板
+├── devops/                 # 部署与运维
 │   ├── deploy.sh
-│   ├── matrix-ensure-user.py
-│   ├── sync-synapse-config.sh
-│   └── volumes/            # 备份/恢复
+│   └── stack-check.sh
 ├── Makefile
+├── tests/
+│   ├── e2e/
+│   └── conftest.py
 ├── docs/
 └── volumes/
     ├── tuwunel-data/
@@ -179,12 +179,12 @@ clawteam/
 
 本项目参考 [HiClaw](https://github.com/alibaba/hiclaw) 的架构设计理念，并在此基础上进行定制：
 
-- **Matrix**：当前 MVP 使用 **Tuwunel**（见 `deploy/docker-compose.yml`）
+- **Matrix**：当前 MVP 使用 **Tuwunel**（见 `containers/docker-compose.yml`）
 - 多个专业化 Agent 由 **OpenClaw Gateway** 统一调度
 - Matrix 客户端自备（如 Element）
 
 ## 8. 版本信息
 
-- OpenClaw：镜像内 pin 版本见 `deploy/Dockerfile.openclaw`
+- OpenClaw：镜像内 pin 版本见 `containers/openclaw/Dockerfile`
 - Tuwunel：`ghcr.io/matrix-construct/tuwunel` OCI 镜像
 - Matrix 客户端：自备（如 Element）
