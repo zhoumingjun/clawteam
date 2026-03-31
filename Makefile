@@ -1,4 +1,4 @@
-.PHONY: help deploy fresh build up down restart logs ps test test-smoke test-e2e test-integration uv-sync clean guard-env stack-check e2e-matrix e2e-matrix-all
+.PHONY: help deploy fresh build up down restart logs ps test test-smoke test-e2e test-integration uv-sync clean guard-env stack-check e2e-matrix e2e-matrix-all dashboard-dev
 
 DC := docker compose -f containers/docker-compose.yml --env-file .env
 
@@ -69,3 +69,6 @@ e2e-matrix-all: guard-env
 clean: guard-env
 	$(DC) down -v
 	rm -rf volumes/*/
+
+dashboard-dev:
+	cd dashboard && OPENCLAW_DATA_DIR=../volumes/openclaw npm run dev

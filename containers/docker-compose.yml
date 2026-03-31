@@ -53,6 +53,25 @@ services:
     depends_on:
       - tuwunel
 
+  # Dashboard (Next.js)
+  dashboard:
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
+    image: clawteam-dashboard:latest
+    container_name: clawteam-dashboard
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ../volumes/openclaw:/data/openclaw:rw
+    environment:
+      OPENCLAW_DATA_DIR: /data/openclaw
+    networks:
+      - clawteam-network
+    depends_on:
+      - openclaw
+
 networks:
   clawteam-network:
     driver: bridge
