@@ -34,6 +34,7 @@ __pycache__/
 # Node
 node_modules/
 npm-debug.log
+.next/
 
 # 测试输出
 outputs/
