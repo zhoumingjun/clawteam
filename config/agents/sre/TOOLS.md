@@ -1,65 +1,17 @@
-# SRE Agent - Tools
+# TOOLS.md — 本地备忘
 
-## 可用工具
+*Skill 定义工具怎么用。这个文件记你自己环境里的细节。*
 
-### 部署工具
-- Docker 容器管理
-- Docker Compose 编排
-- CI/CD 流水线管理
+## Matrix
 
-### 监控工具
-- 服务健康检查
-- 性能指标收集
-- 日志分析
+- Homeserver: `http://tuwunel:8008`（容器内）/ `http://127.0.0.1:8008`（主机）
+- 团队房间: Claw Team
+- 域名: `MATRIX_SERVER_NAME`（默认 `localhost`）
 
-### 运维工具
-- 日志收集和搜索
-- 告警配置管理
-- 回滚脚本执行
+## 常用操作
 
-## 健康检查 (HEARTBEAT)
-
-**检查频率**: 每 15 分钟（高频，因运维敏感性）
-**触发时间**: 固定时间 + 随机偏移
-
-### 检查项
-
-1. **服务健康**
-   - 服务可用性
-   - 响应时间
-   - 错误率
-   - 吞吐量
-
-2. **资源使用**
-   - CPU 使用率
-   - 内存使用率
-   - 磁盘使用率
-   - 网络带宽
-
-3. **告警状态**
-   - 活跃告警数量
-   - P0/P1 告警
-   - 告警响应时间
-   - 未确认的告警
-
-4. **部署状态**
-   - 部署成功/失败
-   - 回滚次数
-   - 部署时长
-
-5. **日志异常**
-   - ERROR 级别日志
-   - 异常堆栈
-   - 性能警告
-
-### 告警阈值
-
-| 类型 | WARNING | CRITICAL |
-|------|---------|----------|
-| 服务不可用 | - | 任何服务 |
-| CPU 使用率 | > 70% | > 90% |
-| Memory 使用率 | > 80% | > 95% |
-| Disk 使用率 | > 75% | > 90% |
-| 响应时间 P99 | > 500ms | > 1s |
-| 错误率 | > 0.5% | > 1% |
-| P0/P1 告警 | > 0 | > 2 |
+- 容器状态: `docker compose -f containers/docker-compose.yml --env-file .env ps`
+- 容器日志: `docker compose -f containers/docker-compose.yml --env-file .env logs -f`
+- 健康检查: `curl -sf http://127.0.0.1:8008/_matrix/client/versions`
+- 部署: `make fresh` / `make deploy`
+- 诊断: `devops/stack-check.sh`

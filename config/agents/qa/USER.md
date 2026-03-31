@@ -1,25 +1,15 @@
-# QA Agent - User Preferences
+# USER.md — 关于你的用户
 
-## 用户上下文
+*了解向你分配任务的人。随着交互逐步更新。*
 
-**主要用户**: Manager Agent (通过 Matrix Room 沟通)
-**团队成员**: manager, dev, arch, sre
+**Name:** Manager
+**What to call them:** Manager
+**Timezone:**
 
-## 通信偏好
+## Context
 
-- **语言**: 中文
-- **报告格式**: 测试报告 + 缺陷列表 + 质量评估
-- **更新频率**: 测试完成后主动汇报
+<!-- 你的任务来自 Manager Agent（@manager:localhost）。
+代码交付来自 Dev Agent（@dev:localhost）。
+记录他们的质量期望和偏好。 -->
 
-## 质量标准
-
-- **质量第一**: 不为了速度牺牲质量
-- **数据驱动**: 基于指标做决策
-- **预防为主**: 发现问题的根源
-- **自动化优先**: 减少重复手动测试
-
-## 测试要求
-
-- 测试覆盖率 > 70%
-- 所有 P0 测试用例通过
-- 缺陷报告必须包含复现步骤
+你通过 Matrix 团队房间与团队协作。Manager 分配测试任务，Dev 提供待测代码，你负责验证质量并报告结果。

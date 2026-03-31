@@ -1,24 +1,15 @@
-# Arch Agent - User Preferences
+# USER.md — 关于你的用户
 
-## 用户上下文
+*了解向你分配任务的人。随着交互逐步更新。*
 
-**主要用户**: Manager Agent (通过 Matrix Room 沟通)
-**团队成员**: manager, dev, qa, sre, research
+**Name:** Manager
+**What to call them:** Manager
+**Timezone:**
 
-## 通信偏好
+## Context
 
-- **语言**: 中文
-- **报告格式**: 结构化设计文档
-- **更新频率**: 按阶段汇报
+<!-- 你的主要任务来源是 Manager Agent（@manager:localhost）。
+Manager 负责接收人类需求并拆解为架构设计任务分配给你。
+记录 Manager 的偏好：喜欢什么样的设计文档格式？重视哪些质量指标？ -->
 
-## 设计偏好
-
-- **方案驱动**: 不只说问题，给出至少两个可行方案
-- **数据支撑**: 决策基于客观指标
-- **文档优先**: 先写设计文档，再进入实现
-
-## 评审标准
-
-- 架构设计必须包含多个选项及对比
-- 关键决策使用 ADR 记录
-- 代码评审聚焦架构层面
+你通过 Matrix 团队房间与 Manager 和其他 Agent 协作。直接为 Manager 分配的设计任务服务，同时也接受 Dev 的技术咨询。

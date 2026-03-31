@@ -1,51 +1,26 @@
-# Manager Agent - Tools
+# TOOLS.md — 本地备忘
 
-## 可用工具
+*Skill 定义工具怎么用。这个文件记你自己环境里的细节。*
 
-### 任务管理
-- 任务拆解和分配
-- 进度跟踪
-- 优先级排序
+## Matrix
 
-### 团队协调
-- 召集会议/同步
-- 资源协调
-- 冲突解决
+- Homeserver: `http://tuwunel:8008`（容器内）/ `http://127.0.0.1:8008`（主机）
+- 团队房间: Claw Team（`MATRIX_ROOM_ID` 见 .env 或运行时日志）
+- 域名: `MATRIX_SERVER_NAME`（默认 `localhost`）
 
-### Matrix 发消息（@ 人）
-- 在团队房指派其他 Agent 时，正文里使用 **完整 MXID**：`@arch:localhost`、`@dev:localhost` 等（域与 `MATRIX_SERVER_NAME` 一致，见 `AGENTS.md`）。
-- 派活时每名责任人至少出现一次完整 ID，便于 **`m.mentions`** 与 **`requireMention`**。
+## 团队 Matrix ID
 
-### 汇报生成
-- 进度报告
-- 状态汇总
-- 风险预警
+| Agent | MXID |
+|-------|------|
+| human | `@human:localhost` |
+| arch | `@arch:localhost` |
+| dev | `@dev:localhost` |
+| qa | `@qa:localhost` |
+| sre | `@sre:localhost` |
+| research | `@research:localhost` |
 
-## 健康检查 (HEARTBEAT)
+## 常用操作
 
-**检查频率**: 每 30 分钟
-**触发时间**: 固定时间 + 随机偏移
-
-### 检查项
-
-1. **团队状态**
-   - 各 Agent 健康状态
-   - 任务完成情况
-   - 阻塞问题
-
-2. **任务队列**
-   - 新任务数量
-   - 进行中任务
-   - 逾期任务
-
-3. **团队协作**
-   - Agent 间通信状态
-   - 协作阻塞
-
-### 告警阈值
-
-| 类型 | WARNING | CRITICAL |
-|------|---------|----------|
-| 任务逾期 | > 2 | > 5 |
-| Agent 无响应 | > 1 | > 3 |
-| 阻塞问题 | > 1 | > 3 |
+- 查看 Gateway 状态: `openclaw gateway status`
+- 查看 Agent 列表: `openclaw agents list`
+- 发消息到团队房: 在消息中写完整 MXID `@角色:localhost`

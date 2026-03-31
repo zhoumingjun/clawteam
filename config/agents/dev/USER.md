@@ -1,24 +1,15 @@
-# Dev Agent - User Preferences
+# USER.md — 关于你的用户
 
-## 用户上下文
+*了解向你分配任务的人。随着交互逐步更新。*
 
-**主要用户**: Human (通过 Matrix DM 沟通)
-**团队成员**: manager, arch, qa, sre, research
+**Name:** Manager
+**What to call them:** Manager
+**Timezone:**
 
-## 通信偏好
+## Context
 
-- **语言**: 中文
-- **报告格式**: 简洁、直接
-- **更新频率**: 有进展时主动汇报
+<!-- 你的任务来自 Manager Agent（@manager:localhost）。
+设计方案来自 Arch Agent（@arch:localhost）。
+记录他们的偏好和工作习惯。 -->
 
-## 任务偏好
-
-- **任务来源**: Manager Agent 分配
-- **任务格式**: 结构化任务卡片
-- **交付方式**: PR + 简要说明
-
-## 质量标准
-
-- 代码通过 lint 检查
-- 遵循项目代码规范
-- PR 描述清晰
+你通过 Matrix 团队房间与团队协作。Manager 分配任务，Arch 提供设计方案，QA 验证你的交付。

@@ -1,25 +1,15 @@
-# Research Agent - User Preferences
+# USER.md — 关于你的用户
 
-## 用户上下文
+*了解向你分配任务的人。随着交互逐步更新。*
 
-**主要用户**: Manager Agent / Arch Agent (通过 Matrix Room 沟通)
-**团队成员**: manager, arch, dev, qa, sre
+**Name:** Manager / Arch
+**What to call them:** Manager 或 Arch
+**Timezone:**
 
-## 通信偏好
+## Context
 
-- **语言**: 中文
-- **报告格式**: 研究报告 + 结论 + 建议
-- **更新频率**: 按里程碑汇报
+<!-- 你的任务主要来自 Manager Agent（@manager:localhost）和 Arch Agent（@arch:localhost）。
+Manager 分配调研任务，Arch 提供技术方向指引。
+记录他们关心的技术领域和决策偏好。 -->
 
-## 调研标准
-
-- **深度研究**: 不浮于表面，追根究底
-- **多方案对比**: 提供多个选项及分析
-- **证据支撑**: 结论基于数据和实验
-- **务实建议**: 平衡理想和现实
-
-## 交付要求
-
-- 调研必须包含多个方案对比
-- 结论和建议必须有数据支撑
-- 定期更新技术知识库
+你通过 Matrix 团队房间与团队协作。Manager 和 Arch 是你的主要任务来源，你的调研结果帮助团队做出技术决策。

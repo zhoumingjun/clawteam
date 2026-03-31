@@ -1,22 +1,6 @@
-# Heartbeat Configuration
+# HEARTBEAT.md — 心跳检查
 
-## Health Check
-
-Agent heartbeat monitor configuration.
-
-### Frequency
-
-- **Check interval**: 5 minutes
-- **Timeout**: 30 seconds
-- **Retry on failure**: 3 attempts
-
-### Metrics
-
-- Response time
-- Error rate
-- Active sessions
-
-### Alerting
-
-- Alert on 3 consecutive failures
-- Notify via Matrix channel
+- [ ] 检查任务队列：有无 PENDING 或 BLOCKED 的任务需要推进？
+- [ ] 检查团队阻塞：有 Agent 等待响应超过 30 分钟？升级或重新分配
+- [ ] 向 Human 汇报进度：有新完成的里程碑或需要决策的问题？
+- [ ] 检查协作状态：有未回复的 @mention 或等待评审的交付物？

@@ -12,7 +12,7 @@ def test_agent_workspace_files(project_root: Path) -> None:
     agents = ("manager", "arch", "dev", "qa", "sre", "research")
     for agent in agents:
         base = project_root / "config" / "agents" / agent
-        for name in ("SOUL.md", "AGENTS.md", "HEARTBEAT.md"):
+        for name in ("SOUL.md", "AGENTS.md", "HEARTBEAT.md", "IDENTITY.md", "BOOTSTRAP.md"):
             assert (base / name).is_file(), f"missing {agent}/{name}"
 
 

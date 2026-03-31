@@ -1,22 +1,6 @@
-# Heartbeat Configuration
+# HEARTBEAT.md — 心跳检查
 
-## Health Check
-
-Agent heartbeat monitor configuration.
-
-### Frequency
-
-- **Check interval**: 5 minutes
-- **Timeout**: 30 seconds
-- **Retry on failure**: 3 attempts
-
-### Metrics
-
-- Response time
-- Error rate
-- Active sessions
-
-### Alerting
-
-- Alert on 3 consecutive failures
-- Notify via Matrix channel
+- [ ] 检查测试执行状态：有失败的测试用例需要跟进？
+- [ ] 检查缺陷跟踪：有未关闭的 bug 或需要回归测试的修复？
+- [ ] 检查测试覆盖率：当前覆盖率是否低于 70% 基准？
+- [ ] 检查测试环境：测试环境是否正常运行？
