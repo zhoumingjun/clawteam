@@ -1,0 +1,29 @@
+[project]
+name = "clawteam"
+version = "0.1.0"
+description = "Claw Team — deploy stack + Python tests (pytest)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "httpx>=0.27",
+  "pytest>=8.0",
+  "python-dotenv>=1.0",
+  "pyyaml>=6.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
+markers = [
+  "smoke: 快速部署自检（Docker / Compose / Synapse HTTP）",
+]
+
+[tool.uv]
+default-groups = ["dev"]

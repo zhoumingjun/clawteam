@@ -2,6 +2,8 @@
 
 本文档提供 Claw Team 的完整部署流程，涵盖开发环境搭建到生产环境加固。
 
+**当前 MVP**：Matrix 使用 **[Tuwunel](https://github.com/matrix-construct/tuwunel)**（`deploy/docker-compose.yml`，镜像 `ghcr.io/matrix-construct/tuwunel:v1.5.1`），OpenClaw 单容器。Synapse 数据**不可**原地迁移至 Tuwunel；切换请 **`make fresh`**。文中若仍有旧 Conduit / Synapse 表述，以本段为准。
+
 ## 1. 环境要求
 
 ### 1.1 系统要求
@@ -70,24 +72,9 @@ make ps
 make logs
 ```
 
-### 2.4 初始化 Matrix 用户
+### 2.4 Matrix 用户与团队房
 
-```bash
-# 设置用户密码（必须设置强密码）
-export MANAGER_PASSWORD="your-secure-manager-password"
-export HUMAN_PASSWORD="your-secure-human-password"
-export ARCH_PASSWORD="your-secure-arch-password"
-export DEV_PASSWORD="your-secure-dev-password"
-export QA_PASSWORD="your-secure-qa-password"
-export SRE_PASSWORD="your-secure-sre-password"
-export RESEARCH_PASSWORD="your-secure-research-password"
-
-# 允许用户注册（仅初始化时）
-export CONDUIT_ALLOW_REGISTRATION=true
-
-# 运行初始化脚本
-bash configs/matrix/init.sh
-```
+在 `.env` 中设置 **`HUMAN_PASSWORD`** 与各 **`*_PASSWORD`** 后，执行 **`make fresh`** 或 **`make deploy`**：`platform/deploy.sh` 在 Tuwunel 就绪后用 Client API（`registration_token` = `SYNAPSE_REGISTRATION_SHARED_SECRET`）创建/登录用户，OpenClaw 启动脚本刷新 token、拉 Gateway、建/绑团队房。**已存在用户时无法在脚本中强制改密**（与旧 Synapse `register_new_matrix_user` 不同），改密请 `make fresh` 或在客户端操作。
 
 ### 2.5 验证部署
 
@@ -95,73 +82,21 @@ bash configs/matrix/init.sh
 # 运行烟雾测试
 make test-smoke
 
-# 访问服务
-echo "Conduit (Matrix): http://localhost:10000"
-echo "Element Web: http://localhost:10001"
+# 访问服务（Homeserver；Matrix 客户端自备）
+echo "Tuwunel (Matrix): http://localhost:8008"
 ```
+
+推荐首次部署直接运行项目根目录 **`./platform/deploy.sh`**（将创建 `volumes/`、拉起 `deploy/docker-compose.yml` 定义的服务）。
+
+### 2.6 Tuwunel 调优（限速、内存）
+
+Tuwunel 通过 **`TUWUNEL_*` 环境变量** 或挂载 `tuwunel.toml` 配置（见 [tuwunel.chat/configuration](https://tuwunel.chat/configuration.html)）。Rust 版 homeserver 默认通常比 Synapse 更耐本地多客户端并发；若仍遇 `M_LIMIT_EXCEEDED`，请查官方文档中的频率与超时相关项，并在 **`deploy/docker-compose.yml`** 的 `tuwunel.environment` 中追加变量后 `docker compose up -d tuwunel`。
 
 ## 3. 配置说明
 
 ### 3.1 .env 文件配置
 
-```bash
-# ============================================
-# Matrix / Conduit 配置
-# ============================================
-
-# Conduit 服务器名称（必须与域名匹配）
-CONDUIT_SERVER=localhost:10000
-
-# 是否允许新用户注册（生产环境设为 false）
-CONDUIT_ALLOW_REGISTRATION=false
-
-# ============================================
-# Agent API Keys
-# ============================================
-# 每个 Agent 都需要独立的 Claude API Key
-
-MANAGER_API_KEY=sk-ant-your-manager-key
-ARCH_API_KEY=sk-ant-your-arch-key
-DEV_API_KEY=sk-ant-your-dev-key
-QA_API_KEY=sk-ant-your-qa-key
-SRE_API_KEY=sk-ant-your-sre-key
-RESEARCH_API_KEY=sk-ant-your-research-key
-
-# ============================================
-# Agent 模型配置（可选）
-# ============================================
-# 默认使用 claude-opus-4-20250514
-
-# MANAGER_MODEL=claude-opus-4-20250514
-# ARCH_MODEL=claude-opus-4-20250514
-# DEV_MODEL=claude-sonnet-4-20250514
-# QA_MODEL=claude-sonnet-4-20250514
-# SRE_MODEL=claude-haiku-4-20250514
-# RESEARCH_MODEL=claude-opus-4-20250514
-
-# ============================================
-# 用户密码
-# ============================================
-# 初始化后建议删除这些变量
-
-MANAGER_PASSWORD=your-secure-manager-password
-HUMAN_PASSWORD=your-secure-human-password
-ARCH_PASSWORD=your-secure-arch-password
-DEV_PASSWORD=your-secure-dev-password
-QA_PASSWORD=your-secure-qa-password
-SRE_PASSWORD=your-secure-sre-password
-RESEARCH_PASSWORD=your-secure-research-password
-
-# ============================================
-# 网络端口
-# ============================================
-
-# Conduit Matrix 端口
-CONDUIT_PORT=10000
-
-# Element Web 端口
-ELEMENT_PORT=10001
-```
+以仓库根目录 **`.env.example`** 为权威模板（**`SYNAPSE_SERVER_NAME`**、**`SYNAPSE_PORT`**、**`ANTHROPIC_API_KEY`** / **`MODEL_NAME`**、**`HUMAN_PASSWORD`**、各 agent 密码等）。当前栈为 **Synapse + OpenClaw**，无 Conduit 变量。
 
 ### 3.2 敏感信息管理
 
@@ -183,8 +118,8 @@ ELEMENT_PORT=10001
 docker ps
 
 # 2. 检查端口占用
-lsof -i :10000
-lsof -i :10001
+lsof -i ":${SYNAPSE_PORT:-8008}"
+lsof -i :8008
 
 # 3. 查看详细日志
 docker compose up -d
@@ -199,88 +134,33 @@ docker compose logs
 | 权限不足 | 将用户加入 docker 组: `sudo usermod -aG docker $USER` |
 | 磁盘空间不足 | 清理 Docker: `docker system prune -a` |
 
-### 4.2 Conduit 无法启动
+### 4.2 Tuwunel 无法就绪 / OpenClaw 连不上 Matrix
 
-**症状**: Conduit 容器状态为 `Restarting`
+**症状**: `clawteam-tuwunel` 未启动或 `/_matrix/client/versions` 无响应，或 OpenClaw 日志报 Matrix 连接失败。
+
+**排查**:
+```bash
+docker compose -f deploy/docker-compose.yml --env-file .env ps
+docker compose -f deploy/docker-compose.yml --env-file .env logs tuwunel
+curl -sf "http://127.0.0.1:${SYNAPSE_PORT:-8008}/_matrix/client/versions"
+docker compose -f deploy/docker-compose.yml --env-file .env exec openclaw \
+  curl -sf "http://tuwunel:8008/_matrix/client/versions"
+```
+
+**常见处理**: 确认 `TUWUNEL_REGISTRATION_TOKEN` 与 `.env` 中 `SYNAPSE_REGISTRATION_SHARED_SECRET` 一致；账号问题执行 `bash matrix/sync-all-matrix-passwords.sh` 后重启 openclaw；顽固状态可 `make fresh`。
+
+### 4.3 Matrix 客户端无法连接 Homeserver
+
+本仓库**不再**打包 Element Web。请使用自备客户端（如 Element），Homeserver URL 填 `http://localhost:8008`（与 `SYNAPSE_SERVER_NAME`、TLS 设置一致）。
 
 **排查步骤**:
 ```bash
-# 查看 Conduit 日志
-docker compose logs conduit
+# 1. Tuwunel 是否响应
+curl -sf "http://localhost:8008/_matrix/client/versions"
 
-# 检查配置文件
-cat configs/matrix/conduit.yaml
-```
-
-**解决方案**:
-```bash
-# 清理 Conduit 数据并重启
-docker compose down
-rm -rf volumes/conduit-data/*
-docker compose up -d
-bash configs/matrix/init.sh
-```
-
-### 4.3 Agent 无法连接 Matrix
-
-**症状**: Agent 日志显示连接失败
-
-**排查步骤**:
-```bash
-# 1. 检查 Conduit 是否健康
-curl http://localhost:10000/_matrix/client/versions
-
-# 2. 检查 Agent 日志
-docker compose logs manager
-
-# 3. 检查网络连接
-docker compose exec manager curl -v http://conduit:6167/_matrix/client/versions
-```
-
-**解决方案**:
-```bash
-# 重启 Agent
-docker compose restart manager arch dev qa sre research
-```
-
-### 4.4 初始化脚本失败
-
-**症状**: `init.sh` 执行报错
-
-**排查步骤**:
-```bash
-# 1. 确认环境变量已设置
-echo $MANAGER_PASSWORD
-
-# 2. 确认 CONDUIT_ALLOW_REGISTRATION=true
-echo $CONDUIT_ALLOW_REGISTRATION
-
-# 3. 手动测试 API
-curl -X POST http://localhost:10000/_matrix/client/r0/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"test","password":"test","auth":{"type":"m.login.dummy"}}'
-```
-
-### 4.5 Element Web 无法访问
-
-**症状**: 浏览器访问 `http://localhost:10001` 无响应
-
-**排查步骤**:
-```bash
-# 1. 检查 Element 容器状态
-docker compose ps element
-
-# 2. 查看 Element 日志
-docker compose logs element
-
-# 3. 检查端口映射
-docker port clawteam-element
-```
-
-**解决方案**:
-```bash
-# 重启 Element
-docker compose restart element
+# 2. 容器与编排（compose 在 deploy/）
+docker compose -f deploy/docker-compose.yml --env-file .env ps
+docker compose -f deploy/docker-compose.yml --env-file .env logs tuwunel
 ```
 
 ## 5. 生产环境加固
@@ -290,23 +170,16 @@ docker compose restart element
 #### 5.1.1 网络隔离
 
 ```yaml
-# docker-compose.yml
+# 与 deploy/docker-compose.yml 一致：Tuwunel 仅绑定回环
 services:
-  conduit:
+  tuwunel:
     ports:
-      - "127.0.0.1:10000:6167"  # 仅本地访问
-
-  element:
-    ports:
-      - "127.0.0.1:10001:80"   # 仅本地访问
+      - "127.0.0.1:8008:8008"
 ```
 
-#### 5.1.2 禁用用户注册
+#### 5.1.2 Synapse 注册策略
 
-```bash
-# .env
-CONDUIT_ALLOW_REGISTRATION=false
-```
+生产环境请关闭公开注册，使用强 **`SYNAPSE_REGISTRATION_SHARED_SECRET`**，并按 [Synapse 文档](https://matrix-org.github.io/synapse/latest/setup/installation.html) 加固；勿依赖历史上的 Conduit 环境变量。
 
 #### 5.1.3 API Key 安全
 
@@ -349,7 +222,7 @@ server {
     ssl_certificate_key /path/to/key.pem;
 
     location / {
-        proxy_pass http://127.0.0.1:10000;
+        proxy_pass http://127.0.0.1:8008;  # Synapse Client-Server API
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -362,8 +235,7 @@ server {
 # 仅允许必要端口
 # ufw allow 22/tcp    # SSH
 # ufw allow 443/tcp   # HTTPS
-# ufw deny 10000/tcp  # 禁止直接访问 Matrix
-# ufw deny 10001/tcp  # 禁止直接访问 Element
+# ufw deny 8008/tcp   # 若 Synapse 仅应经反向代理暴露，可按需限制直连端口
 ```
 
 ### 5.3 监控配置
@@ -388,11 +260,11 @@ services:
 #### 5.3.2 健康检查
 
 ```yaml
-# 确保所有服务配置 healthcheck
+# 与 deploy/docker-compose.yml 中 synapse 服务类似
 services:
-  conduit:
+  synapse:
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6167/_matrix/client/versions"]
+      test: ["CMD", "curl", "-f", "http://localhost:8008/_matrix/client/versions"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -405,7 +277,7 @@ services:
 ```bash
 # crontab -e
 # 每日凌晨 2:00 执行备份
-0 2 * * * cd /path/to/clawteam && bash scripts/volumes/backup.sh >> logs/backup.log 2>&1
+0 2 * * * cd /path/to/clawteam && bash platform/volumes/backup.sh >> logs/backup.log 2>&1
 
 # 保留最近 30 天备份
 0 3 * * * find /path/to/backups -name "*.tar.gz" -mtime +30 -delete
@@ -431,7 +303,7 @@ cd clawteam
 make down
 
 # 3. 恢复数据
-bash scripts/volumes/restore.sh /path/to/backups/clawteam_backup_YYYYMMDD_HHMMSS.tar.gz
+bash platform/volumes/restore.sh /path/to/backups/clawteam_backup_YYYYMMDD_HHMMSS.tar.gz
 
 # 4. 重启服务
 make up
@@ -461,17 +333,17 @@ make logs
 # 清理未使用的 Docker 资源
 docker system prune -f
 
-# 更新服务
+# 更新服务（编排文件在 deploy/）
 git pull
-docker compose pull
-docker compose up -d
+docker compose -f deploy/docker-compose.yml --env-file .env pull
+docker compose -f deploy/docker-compose.yml --env-file .env up -d
 ```
 
 ### 6.2 版本升级
 
 ```bash
 # 1. 备份当前环境
-bash scripts/volumes/backup.sh
+bash platform/volumes/backup.sh
 
 # 2. 拉取新版本
 git pull
@@ -480,8 +352,8 @@ git pull
 vim .env
 
 # 4. 重启服务
-docker compose down
-docker compose up -d
+docker compose -f deploy/docker-compose.yml --env-file .env down
+docker compose -f deploy/docker-compose.yml --env-file .env up -d
 
 # 5. 验证
 make test-smoke
@@ -491,6 +363,6 @@ make test-smoke
 
 - [Docker 官方文档](https://docs.docker.com/)
 - [Docker Compose 官方文档](https://docs.docker.com/compose/)
-- [Conduit Matrix](https://gitlab.com/famedly/conduit)
-- [Element Web](https://vector-im.github.io/element-web/)
+- [Synapse](https://matrix-org.github.io/synapse/latest/)
+- [Matrix 客户端 Element](https://element.io/)（自备，连接本机 Synapse）
 - [12-Factor App](https://12factor.net/)

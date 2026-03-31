@@ -1,0 +1,5 @@
+# 已弃用：本仓库compose 已改用 Tuwunel。保留文件供自行回退或参考。
+# Synapse with custom homeserver config baked in
+FROM matrixdotorg/synapse:latest
+
+COPY homeserver.yaml /data/homeserver.yaml

@@ -1,0 +1,27 @@
+# OpenClaw Gateway + CLI；Matrix 依赖 @matrix-org/matrix-sdk-crypto-nodejs 的原生库，
+# 在 Alpine 上常解析失败，故使用 Debian slim 并与 openclaw 安装在同一 node_modules 树。
+# 构建时 patch：① auth-profiles 出站 mention（#56950）② monitor 入站 formatted_body matrix.to（#6982）③ 入站信任 m.mentions（Claw Team agent→agent）
+FROM node:22-bookworm-slim
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl bash openssl \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/openclaw-app
+COPY patch-openclaw-matrix-mentions.mjs patch-openclaw-matrix-inbound-formatted-mentions.mjs patch-openclaw-matrix-trust-m-mentions.mjs openclaw-matrix-mentions-inject.js /tmp/openclaw-mention-patch/
+# 单项目安装，保证 openclaw 能 require 到 matrix-sdk-crypto（含 download-lib.js）
+RUN npm init -y >/dev/null 2>&1 \
+  && npm install --omit=dev \
+    openclaw@2026.3.28 \
+    @matrix-org/matrix-sdk-crypto-nodejs@0.4.0 \
+  && node /tmp/openclaw-mention-patch/patch-openclaw-matrix-mentions.mjs \
+  && node /tmp/openclaw-mention-patch/patch-openclaw-matrix-inbound-formatted-mentions.mjs \
+  && node /tmp/openclaw-mention-patch/patch-openclaw-matrix-trust-m-mentions.mjs \
+  && rm -rf /tmp/openclaw-mention-patch
+
+ENV PATH="/opt/openclaw-app/node_modules/.bin:${PATH}"
+ENV NODE_PATH="/opt/openclaw-app/node_modules"
+
+WORKDIR /app
+
+CMD ["tail", "-f", "/dev/null"]

@@ -6,8 +6,7 @@
 
 | 服务 | 端口 | 绑定地址 | 说明 |
 |------|------|----------|------|
-| Synapse | 8008 | 127.0.0.1 | Matrix Client-Server API |
-| Element Web | 10001 | 127.0.0.1 | Web UI |
+| Synapse | 8008 | 127.0.0.1 | Matrix Client-Server API（自备 Matrix 客户端连接此端口） |
 
 **当前策略**: 仅允许本地访问（localhost/127.0.0.1）
 
@@ -48,19 +47,6 @@ server {
     }
 }
 
-server {
-    listen 443 ssl;
-    server_name clawteam.example.com;
-
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
-
-    # Element Web
-    location / {
-        proxy_pass http://127.0.0.1:10001;
-        proxy_set_header Host $host;
-    }
-}
 ```
 
 ### 2. 防火墙规则（Linux）
@@ -72,9 +58,8 @@ ufw allow 22/tcp
 # 允许 HTTPS (443) - 通过反向代理访问
 ufw allow 443/tcp
 
-# 禁止直接访问 Synapse/Element 端口
+# 禁止直接访问 Synapse 端口（仅经反向代理暴露 443）
 ufw deny 8008/tcp
-ufw deny 10001/tcp
 
 # 启用防火墙
 ufw enable
@@ -85,7 +70,7 @@ ufw enable
 ```yaml
 # 生产环境使用自定义网络
 services:
-  synapse:
+  tuwunel:
     networks:
       - internal-network
 
@@ -100,8 +85,7 @@ networks:
 ## 安全检查清单
 
 ### 开发环境
-- [ ] Synapse 只绑定 127.0.0.1
-- [ ] Element Web 只绑定 127.0.0.1
+- [ ] Tuwunel 只绑定 127.0.0.1
 - [ ] API Key 不写入代码
 - [ ] 使用强密码
 
@@ -115,6 +99,5 @@ networks:
 
 ## 相关文档
 
-- `configs/synapse/homeserver.yaml` - Synapse 配置
-- `configs/element/config.json` - Element Web 配置
+- `deploy/homeserver.yaml` - Synapse 配置（构建进镜像）
 - `docs/deployment-guide.md` - 部署指南

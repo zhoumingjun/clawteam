@@ -3,8 +3,9 @@
 .env.local
 .env.*.local
 
-# Docker 卷数据
+# Docker 卷数据（本地持久化）
 /volumes/
+volumes/
 
 # macOS
 .DS_Store
@@ -22,6 +23,10 @@
 logs/
 *.log
 npm-debug.log*
+
+# Python (uv)
+.venv/
+.pytest_cache/
 
 # Node
 node_modules/

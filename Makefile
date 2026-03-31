@@ -1,85 +1,90 @@
-.PHONY: help build up down logs ps test-smoke test-e2e clean init-user init-check init-openclaw-agent help
+.PHONY: help deploy fresh build up down logs ps test test-smoke test-e2e test-integration uv-sync clean guard-env sync-synapse-config e2e-matrix e2e-matrix-all stack-check
 
-# 默认目标
+DC := docker compose -f deploy/docker-compose.yml --env-file .env
+
+guard-env:
+	@test -f .env || (echo "缺少 .env。请: cp .env.example .env 并编辑，或运行 ./platform/deploy.sh"; exit 1)
+
 help:
-	@echo "Claw Team - AI 软件研发工厂"
+	@echo "Claw Team — AI 软件研发工厂 (MVP)"
 	@echo ""
-	@echo "可用命令："
-	@echo "  make up          - 启动所有服务"
-	@echo "  make down        - 停止所有服务"
-	@echo "  make restart     - 重启所有服务"
-	@echo "  make logs        - 查看所有日志"
-	@echo "  make ps          - 查看服务状态"
-	@echo "  make init-user   - 初始化 Matrix 用户"
-	@echo "  make init-check  - 检查初始化状态"
-	@echo "  make init-openclaw-agent - 初始化 OpenClaw Agent"
-	@echo "  make test-smoke  - 运行烟雾测试"
-	@echo "  make test-e2e    - 运行 E2E 测试"
-	@echo "  make clean       - 清理容器和卷"
-
-# 启动所有服务
-up:
-	docker compose up -d
+	@echo "推荐（每次干净环境）:"
+	@echo "  make fresh       - 清空 volumes + 重新 build/up（等同 deploy.sh --fresh）"
 	@echo ""
-	@echo "服务已启动："
-	@echo "  Synapse API: http://localhost:8008"
-	@echo "  Element Web: http://localhost:10001"
+	@echo "其他:"
+	@echo "  ./platform/deploy.sh  - 保留现有 volumes，仅 build + up + 健康检查"
+	@echo ""
+	@echo "常用命令（需先有 .env）:"
+	@echo "  make deploy      - 等同 ./platform/deploy.sh（不删数据）"
+	@echo "  make fresh       - 等同 ./platform/deploy.sh --fresh"
+	@echo "  make build       - 构建镜像"
+	@echo "  make up          - 启动（会先 build）"
+	@echo "  make down        - 停止"
+	@echo "  make restart     - 重启"
+	@echo "  make logs        - 跟踪日志"
+	@echo "  make ps          - 服务状态"
+	@echo "  make uv-sync     - uv sync（Python 依赖）"
+	@echo "  make test        - 全部测试（pytest）"
+	@echo "  make test-smoke  - 仅 smoke 用例（pytest -m smoke）"
+	@echo "  make test-e2e    - 同 make test"
+	@echo "  make clean       - 停止并删除卷数据（慎用）"
+	@echo "  make stack-check   - 检查 tuwunel/openclaw 容器与团队房文件"
+	@echo "  make e2e-matrix    - Matrix mention 核心 E2E（human→@manager，推荐 CI）"
+	@echo "  make e2e-matrix-all - 另跑 manager→@dev（耗时长，易因 LLM/队列失败）"
 
-# 停止所有服务
+deploy:
+	@bash platform/deploy.sh
+
+fresh: guard-env
+	@bash platform/deploy.sh --fresh
+
+sync-synapse-config: guard-env
+	@echo "sync-synapse-config: 已弃用（当前 Homeserver 为 Tuwunel，无需 homeserver.yaml）。"
+
+build: guard-env
+	$(DC) build
+
+# 与 make deploy 相同：先 Tuwunel → 同步账号 → 再 OpenClaw（避免无团队房、无 token）
+up: guard-env
+	@bash platform/deploy.sh
+	@echo ""
+	@echo "  Matrix (Tuwunel): http://127.0.0.1:8008（若改了 SYNAPSE_PORT 请以 .env 为准）"
+
 down:
-	docker compose down
+	$(DC) down
 
-# 重启所有服务
 restart: down up
 
-# 查看日志
 logs:
-	docker compose logs -f
+	$(DC) logs -f
 
-# 查看服务状态
 ps:
-	docker compose ps
+	$(DC) ps
 
-# 检查初始化状态
-init-check:
-	@echo "检查初始化状态..."
-	@echo ""
-	@echo "请设置以下环境变量（必需）："
-	@echo "  export MANAGER_PASSWORD=xxx"
-	@echo "  export HUMAN_PASSWORD=xxx"
-	@echo "  export ARCH_PASSWORD=xxx"
-	@echo "  export DEV_PASSWORD=xxx"
-	@echo "  export QA_PASSWORD=xxx"
-	@echo "  export SRE_PASSWORD=xxx"
-	@echo "  export RESEARCH_PASSWORD=xxx"
-	@echo "  export OPENCLAW_API_KEY=xxx"
-	@echo "  export OPENCLAW_AGENT_PASSWORD=xxx"
-	@echo ""
-	@echo "或复制 .env.example 为 .env 并填写密码"
+uv-sync:
+	uv sync
 
-# 初始化 Matrix 用户
-init-user: init-check
-	@echo ""
-	@echo "开始初始化 Matrix 用户..."
-	@bash configs/matrix/init.sh
+test: guard-env
+	uv run pytest tests/
 
-# 初始化 OpenClaw Agent
-init-openclaw-agent:
-	@echo ""
-	@echo "开始初始化 OpenClaw Agent Manager..."
-	@bash scripts/openclaw-agent-init.sh
+test-smoke: guard-env
+	uv run pytest tests/ -m smoke
 
-# 烟雾测试
-test-smoke:
-	@echo "运行烟雾测试..."
-	@bash tests/smoke/run.sh
+test-e2e: test
 
-# E2E 测试
-test-e2e:
-	@echo "运行 E2E 测试..."
-	@bash tests/e2e/run.sh
+test-integration: test
 
-# 清理
-clean:
-	docker compose down -v
+stack-check: guard-env
+	@bash platform/stack-check.sh
+
+# Matrix：栈 + openclaw.json + human→@manager（验证 mention 出站；需真实 LLM）
+e2e-matrix: guard-env
+	@bash matrix/e2e-matrix-agents-core.sh
+
+# 完整：另测 manager Matrix 账号 @dev（agent 间；易超时）
+e2e-matrix-all: guard-env
+	@bash matrix/e2e-matrix-agents-all.sh
+
+clean: guard-env
+	$(DC) down -v
 	rm -rf volumes/*/

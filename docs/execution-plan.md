@@ -12,7 +12,7 @@
 |----|------|------|------|------------|------|
 | SPEC-001 | init-project | 项目初始化 | 建立项目基础结构 | 目录结构、Makefile、.env.example | - |
 | SPEC-002 | docker-compose | 服务编排 | 定义 docker-compose 编排 | docker-compose.yml、网络配置 | SPEC-001 |
-| SPEC-003 | conduit-matrix | Matrix 服务器 | 集成 Conduit | Conduit 配置、用户/房间初始化脚本 | SPEC-001 |
+| SPEC-003 | conduit-matrix（历史名） | Matrix 服务器 | 现为 **Synapse** | `deploy/homeserver.yaml`、`platform/deploy.sh` | SPEC-001 |
 | SPEC-004 | storage-volumes | 存储卷设计 | 配置数据持久化 | Volume 配置、备份恢复脚本 | SPEC-001 |
 
 ---
@@ -79,11 +79,11 @@
 | 1 | Docker 构建 | `make build` | 无错误 |
 | 2 | 服务启动 | `make up` | 所有服务 Up |
 | 3 | Conduit 健康 | HTTP 请求 `/_matrix/client/versions` | 返回 200 + 版本信息 |
-| 4 | Element Web 健康 | HTTP 请求 `/` | 返回 HTML |
+| 4 | OpenClaw 容器 | `docker ps` | `clawteam-openclaw` 为 Up |
 | 5 | Agent 进程运行 | `docker compose exec` | 进程存在 |
 | 6 | Matrix 用户创建 | 脚本执行 | 用户创建成功 |
 | 7 | 房间创建 | 脚本执行 | 房间创建成功 |
-| 8 | 人机通信 | Element Web | Human 与 Agent 互发消息 |
+| 8 | 人机通信 | Matrix 客户端 | Human 与 Agent 互发消息 |
 | 9 | Agent 间通信 | Matrix 日志 | Agent 消息传递 |
 | 10 | 配置持久化 | 重启服务 | 配置不丢失 |
 
@@ -180,23 +180,14 @@ make down
 
 ```
 clawteam/
+├── deploy/                 # Compose + Dockerfiles + homeserver.yaml
+├── config/openclaw/        # Agent workspace 模板
+├── matrix/                 # Matrix 协作：密码同步、团队房、mention E2E
+├── openclaw/               # 容器入口 openclaw-startup.sh
+├── platform/               # deploy.sh、sync-synapse-config、卷备份
 ├── docs/
-│   ├── overview.md         # 项目概述
-│   └── execution-plan.md   # 本文档
-├── configs/
-│   ├── agents/
-│   │   ├── manager/
-│   │   ├── arch/
-│   │   ├── dev/
-│   │   ├── qa/
-│   │   ├── sre/
-│   │   └── research/
-│   └── matrix/
-├── volumes/
-├── tests/
-│   ├── smoke/
-│   └── e2e/
-├── docker-compose.yml
+├── volumes/                # 本地数据（不入库）
+├── tests/                  # pytest；tests/e2e/run.sh 为 uv+pytest 入口
 └── Makefile
 ```
 

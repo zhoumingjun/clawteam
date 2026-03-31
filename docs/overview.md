@@ -36,7 +36,7 @@ Claw Team 旨在构建一个 **开箱即用的 AI 软件研发工厂**，通过�
 
 ### 2.3 用户交互
 
-- 人类用户通过 Matrix（Conduit + Element Web）与 Agent 直接交互
+- 人类用户通过 Matrix（Tuwunel + 自备 Matrix 客户端）与 Agent 直接交互
 - 全程保持"人心在环"（Human-in-the-loop），可随时干预
 - 每个项目创建独立的 Team（Manager + 相关 Agent + Human）
 
@@ -48,8 +48,8 @@ Claw Team 旨在构建一个 **开箱即用的 AI 软件研发工厂**，通过�
 |------|----------|------|
 | AI Provider | Claude API | 各 Agent 独立 API Key |
 | 开发工具 | Claude Code CLI | 每个 Agent 容器内运行 |
-| 消息中间件 | Conduit (Matrix) | Agent 间 + 人机通信 |
-| Web UI | Element Web | 人类用户交互界面 |
+| 消息中间件 | Tuwunel (Matrix) | Agent 间 + 人机通信 |
+| Matrix 客户端 | 自备（如 Element） | 人类用户连接 Homeserver |
 | 容器编排 | Docker Compose | 一键启动 |
 | 运行时管理 | mise | 统一管理 Node/Python/Go 等工具链 |
 | Shell | zsh + oh-my-zsh + starship | 现代化终端体验 |
@@ -79,28 +79,16 @@ Claw Team 旨在构建一个 **开箱即用的 AI 软件研发工厂**，通过�
 ┌─────────────────────────────────────────────────────────────┐
 │                    Docker Compose Network                    │
 │                                                              │
-│  ┌──────────────┐                                           │
-│  │   Conduit    │◄─── 端口 10000 (Matrix 协议)               │
-│  │  (Matrix)    │                                           │
-│  └──────────────┘                                           │
-│         │                                                    │
-│  ┌──────────────┐                                           │
-│  │ Element Web  │◄─── 端口 10001 (Web UI)                   │
-│  └──────────────┘                                           │
-│         │                                                    │
-│  ┌──────────────────────────────────────────────────────────┐│
-│  │                   Agent Containers                        ││
-│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌─────┐ ││
-│  │  │Manager │ │  Arch  │ │  Dev   │ │   QA   │ │ SRE │ ││
-│  │  └────────┘ └────────┘ └────────┘ └────────┘ └─────┘ ││
-│  │  ┌────────┐                                             ││
-│  │  │Research│                                             ││
-│  │  └────────┘                                             ││
-│  └──────────────────────────────────────────────────────────┘│
+│  ┌──────────────┐         ┌──────────────────────────────┐   │
+│  │  Tuwunel     │◄────────│ OpenClaw（Gateway + 多 Agent）│   │
+│  │  (Matrix HS) │  :8008  │  逻辑角色：manager/arch/…    │   │
+│  └──────────────┘         └──────────────────────────────┘   │
+│         ▲                                                    │
+│  （Human 经 127.0.0.1:8008 等连接 Tuwunel，房内 @ 各角色）     │
 │         │                                                    │
 │  ┌──────────────────────────────────────────────────────────┐│
 │  │                   Docker Volumes                          ││
-│  │  openclaw-config/  openclaw-data/  conduit-data/        ││
+│  │  tuwunel-data/  openclaw/（bind mount，见 deploy/compose） ││
 │  └──────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -109,32 +97,19 @@ Claw Team 旨在构建一个 **开箱即用的 AI 软件研发工厂**，通过�
 
 ### 4.1 网络端口
 
-| 服务 | 主机端口 |
+| 服务 | 主机端口（默认，见 `.env`） |
 |------|----------|
-| Conduit (Matrix) | 10000 |
-| Element Web | 10001 |
+| Tuwunel（Matrix HS） | `127.0.0.1:8008` |
 
 ### 4.2 存储方案
 
-- 所有 OpenClaw 配置和数据通过 Docker Volume 持久化
-- Volume 挂载到主机目录，便于备份和迁移
-- Agent 容器删除后配置不丢失
+- Tuwunel 与 OpenClaw 状态通过 **`volumes/tuwunel-data`**、**`volumes/openclaw`**（bind mount）持久化
+- 便于备份与迁移（见 **`platform/volumes/`**）
 
-### 4.3 工具链管理
+### 4.3 工具链
 
-统一使用 mise 管理运行时环境：
-
-```bash
-# Node.js
-mise use node@22
-mise use npm@latest
-
-# Python (如需要)
-mise use python@3.12
-
-# Go (如需要)
-mise use go@latest
-```
+- **运行时**：Docker / Docker Compose（见 `Makefile`、`platform/deploy.sh`）。
+- **Python 测试**：[uv](https://docs.astral.sh/uv/) + pytest（`pyproject.toml`）。
 
 ### 4.4 安全约束
 
@@ -150,7 +125,7 @@ mise use go@latest
 |----|------|--------|
 | F01 | 支持 6 种 Agent 角色（manager/arch/dev/qa/sre/research） | P0 |
 | F02 | Agent 间通过 Matrix 协议通信 | P0 |
-| F03 | 人类用户通过 Element Web 与 Agent 交互 | P0 |
+| F03 | 人类用户通过 Matrix 客户端与 Agent 交互 | P0 |
 | F04 | 每个 Agent 使用 Claude Code CLI 进行代码开发 | P0 |
 | F05 | 每个 Agent 有独立的 SOUL.md/AGENTS.md/HEARTBEAT.md 配置 | P0 |
 | F06 | 通过 docker-compose 一键启动所有服务 | P0 |
@@ -173,75 +148,43 @@ mise use go@latest
 
 ### 6.1 Docker Compose
 
-```yaml
-services:
-  conduit:
-    # Matrix Homeserver
-    ports:
-      - "10000:6167"
-
-  element:
-    # Web UI
-    ports:
-      - "10001:80"
-
-  manager:
-    # Manager Agent
-
-  arch:
-    # Architecture Agent
-
-  dev:
-    # Development Agent
-
-  qa:
-    # QA Agent
-
-  sre:
-    # SRE Agent
-
-  research:
-    # Research Agent
-```
+以仓库内 **`deploy/docker-compose.yml`** 为准，当前 MVP 仅包含 **`tuwunel`** 与 **`openclaw`** 两个服务；多 Agent 由 OpenClaw Gateway 在同一容器内调度，而非每角色独立容器。
 
 ### 6.2 目录结构
 
 ```
 clawteam/
-├── docker-compose.yml
+├── deploy/
+│   ├── docker-compose.yml
+│   ├── Dockerfile.synapse   # 遗留（Synapse）
+│   ├── Dockerfile.openclaw
+│   └── homeserver.yaml    # 遗留
+├── config/openclaw/    # 各 workspace-* Markdown 模板
+├── matrix/                 # Matrix 团队协作脚本（密码、团队房、mention E2E）
+├── openclaw/               # OpenClaw 容器入口等
+│   └── openclaw-startup.sh
+├── platform/               # 部署与基础设施
+│   ├── deploy.sh
+│   ├── matrix-ensure-user.py
+│   ├── sync-synapse-config.sh
+│   └── volumes/            # 备份/恢复
 ├── Makefile
 ├── docs/
-│   └── overview.md
-├── configs/
-│   ├── matrix/
-│   │   └── conduit.yaml
-│   └── agents/
-│       ├── manager/
-│       │   ├── soul.md
-│       │   ├── agents.md
-│       │   └── heartbeat.md
-│       ├── arch/
-│       ├── dev/
-│       ├── qa/
-│       ├── sre/
-│       └── research/
 └── volumes/
-    ├── openclaw-config/
-    ├── openclaw-data/
-    └── conduit-data/
+    ├── tuwunel-data/
+    └── openclaw/
 ```
 
 ## 7. 参考架构
 
 本项目参考 [HiClaw](https://github.com/alibaba/hiclaw) 的架构设计理念，并在此基础上进行定制：
 
-- 采用 Conduit 替代 Tuwunel 作为 Matrix 服务器
-- 使用 Claude Code CLI 替代通用 Agent
-- 扩大 Agent 角色范围覆盖完整 SDLC
-- 使用 mise 统一工具链管理
+- **Matrix**：当前 MVP 使用 **Tuwunel**（见 `deploy/docker-compose.yml`）
+- 多个专业化 Agent 由 **OpenClaw Gateway** 统一调度
+- Matrix 客户端自备（如 Element）
 
 ## 8. 版本信息
 
-- OpenClaw: 最新稳定版
-- Conduit: 最新稳定版
-- Element Web: 最新稳定版
+- OpenClaw：镜像内 pin 版本见 `deploy/Dockerfile.openclaw`
+- Tuwunel：`ghcr.io/matrix-construct/tuwunel` OCI 镜像
+- Matrix 客户端：自备（如 Element）

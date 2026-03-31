@@ -48,7 +48,7 @@
 | 服务 | 状态 | 端口 |
 |------|------|------|
 | Synapse (Matrix HS) | ✅ healthy | 127.0.0.1:8008 |
-| Element Web | ✅ healthy | 127.0.0.1:10001 |
+| Matrix 客户端 | — | 自备（Element 等，连接 8008） |
 | OpenClaw Agent Manager | ✅ healthy | container |
 | OpenClaw Agent Dev | ✅ healthy | container |
 | OpenClaw Agent Arch | ✅ healthy | container |
