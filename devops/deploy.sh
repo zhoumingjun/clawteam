@@ -29,7 +29,7 @@ if [ ! -f .env ]; then
 fi
 
 # 安全解析端口（不 source .env）
-MATRIX_PORT="$(grep -m1 '^MATRIX_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '[:space:]"'"'"'" || echo 8008)"
+MATRIX_PORT="$(grep -m1 '^MATRIX_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d "[:space:]\"'" || echo 8008)"
 MATRIX_PORT="${MATRIX_PORT:-8008}"
 
 if [ "$FRESH" -eq 1 ]; then

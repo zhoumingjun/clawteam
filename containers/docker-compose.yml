@@ -21,12 +21,8 @@ services:
       TUWUNEL_ALLOW_REGISTRATION: "true"
       TUWUNEL_REGISTRATION_TOKEN: "${MATRIX_REGISTRATION_TOKEN:-a-secret-key-change-in-production}"
       TUWUNEL_ALLOW_FEDERATION: "${TUWUNEL_ALLOW_FEDERATION:-false}"
-    healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8008'"]
-      interval: 5s
-      timeout: 3s
-      retries: 30
-      start_period: 10s
+    # Tuwunel 镜像无 shell，healthcheck 由 openclaw 的 wait_for_homeserver() 负责
+    # healthcheck: 不适用（distroless 镜像）
 
   # OpenClaw (Gateway + agents)
   openclaw:
@@ -55,8 +51,7 @@ services:
     networks:
       - clawteam-network
     depends_on:
-      tuwunel:
-        condition: service_healthy
+      - tuwunel
 
 networks:
   clawteam-network:
