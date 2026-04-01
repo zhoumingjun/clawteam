@@ -23,19 +23,15 @@ agents:
 
 projects: []
 
-collaboration:
-  沟通方式: |
-    团队通过 Matrix 房间协作，@mention 对应 agent 触发响应。
-    所有讨论在团队房间公开进行，确保信息透明。
-  任务分发: |
-    所有任务由 Manager 统一分发。
-    Agent 通过 Gateway RPC 接收指令，不自动响应 Matrix 消息。
-    每个任务需明确目标、输入和验收标准。
-  决策机制: |
-    重大决策必须 Human 确认。
-    技术方案由 Arch 主导，Product 负责需求验收。
-    跨角色争议由 Manager 协调，Human 终裁。
-  记忆与状态: |
-    每个 Agent 的 MEMORY.md 是私有的，不跨 Agent 共享。
-    Session 间无状态，文件即记忆。
-    修改 SOUL.md 需告知 Human。
+rules:
+  通信协议: |
+    【强制】每条消息必须 @mention 恰好一个目标用户（完整 MXID：@name:localhost）。
+    禁止不 mention 任何人的广播式发言。
+    禁止同时 mention 多个人——如需通知多人，分多条消息发送。
+    回复时同样必须 @mention 恰好一个目标。
+  何时发言: 被直接 @ 判断是否必须回复，避免无意义回复；主动发言时只需 @ 一个目标
+  何时沉默: 没人 @ 你时不需要回复；对话与你无关时保持沉默
+  沟通方式: 团队通过 Matrix 房间协作，所有讨论公开透明
+  任务分发: Manager 统一分发
+  决策: 重大决策 Human 确认，跨角色争议 Manager 协调
+  记忆: MEMORY.md 私有，Session 间无状态

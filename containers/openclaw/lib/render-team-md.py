@@ -13,77 +13,87 @@ import sys
 
 
 def parse_team_yaml(path):
-    """Simple parser — no PyYAML dependency."""
+    """Simple parser — no PyYAML dependency. Supports both 'collaboration:' and 'rules:' sections."""
     with open(path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    agents = []
-    collaboration = {}
+    agents = {}
+    rules = {}
     section = None  # current top-level key
-    collab_key = None
-    collab_buf = []
+    current_key = None
+    buf = []
 
     for line in lines:
         raw = line.rstrip()
 
-        # Detect top-level keys
-        top_match = re.match(r"^(agents|projects|collaboration):", raw)
+        # Detect top-level keys (treat rules same as collaboration)
+        top_match = re.match(r"^(agents|projects|collaboration|rules):", raw)
         if top_match:
-            # flush previous collab key
-            if collab_key and collab_buf:
-                collaboration[collab_key] = "\n".join(collab_buf).strip()
-                collab_buf = []
-                collab_key = None
-            section = top_match.group(1)
+            # flush previous key (only if buf has actual content)
+            if current_key and buf:
+                content = "\n".join(buf).strip()
+                if content:
+                    rules[current_key] = content
+                buf = []
+                current_key = None
+            raw_key = top_match.group(1)
+            # normalize rules -> collaboration (same semantics)
+            section = "collaboration" if raw_key == "rules" else raw_key
             continue
 
         if section == "agents":
             m = re.match(r"^\s+-\s+name:\s*(.+)", raw)
             if m:
-                agents.append({"name": m.group(1).strip()})
+                name = m.group(1).strip()
+                agents[name] = {"name": name}
                 continue
             m = re.match(r"^\s+role:\s*(.+)", raw)
             if m and agents:
-                agents[-1]["role"] = m.group(1).strip()
+                list(agents.values())[-1]["role"] = m.group(1).strip()
                 continue
             m = re.match(r"^\s+emoji:\s*(.+)", raw)
             if m and agents:
-                agents[-1]["emoji"] = m.group(1).strip()
+                list(agents.values())[-1]["emoji"] = m.group(1).strip()
                 continue
             # next top-level key
             if raw and not raw[0].isspace():
                 section = None
 
         elif section == "collaboration":
-            # "  key: |" or "  key: value"
+            # Skip blank lines (they don't belong to any key)
+            if not raw.strip():
+                continue
+            # "  key: |" or "  key: value" (single-line)
             m = re.match(r"^\s{2}(\S[^:]*):\s*(.*)", raw)
             if m:
                 # flush previous
-                if collab_key and collab_buf:
-                    collaboration[collab_key] = "\n".join(collab_buf).strip()
-                    collab_buf = []
-                collab_key = m.group(1).strip()
+                if current_key and buf:
+                    rules[current_key] = "\n".join(buf).strip()
+                    buf = []
+                current_key = m.group(1).strip()
                 rest = m.group(2).strip()
                 if rest and rest != "|":
-                    collab_buf.append(rest)
+                    buf.append(rest)
                 continue
-            # Indented continuation lines
-            if raw.startswith("    ") and collab_key:
-                collab_buf.append(raw.strip())
+            # Indented continuation lines (must be 4+ spaces after rules:)
+            if raw.startswith("    ") and current_key:
+                buf.append(raw.strip())
                 continue
             # Next top-level key
             if raw and not raw[0].isspace():
-                if collab_key and collab_buf:
-                    collaboration[collab_key] = "\n".join(collab_buf).strip()
-                    collab_buf = []
-                    collab_key = None
+                if current_key and buf:
+                    rules[current_key] = "\n".join(buf).strip()
+                    buf = []
+                    current_key = None
                 section = None
 
-    # flush last collab key
-    if collab_key and collab_buf:
-        collaboration[collab_key] = "\n".join(collab_buf).strip()
+    # flush last key
+    if current_key and buf:
+        content = "\n".join(buf).strip()
+        if content:
+            rules[current_key] = content
 
-    return agents, collaboration
+    return list(agents.values()), rules
 
 
 def render(agents, collaboration, server_name):
