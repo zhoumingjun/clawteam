@@ -10,14 +10,7 @@
 
 ## 团队 Matrix ID
 
-| Agent | MXID |
-|-------|------|
-| human | `@human:localhost` |
-| arch | `@arch:localhost` |
-| dev | `@dev:localhost` |
-| qa | `@qa:localhost` |
-| sre | `@sre:localhost` |
-| research | `@research:localhost` |
+> 完整成员列表见 [`../TEAM.md`](../TEAM.md)（由 team.yaml 自动生成）。
 
 ## 常用操作
 

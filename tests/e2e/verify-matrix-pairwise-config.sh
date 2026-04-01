@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 JSON="${OPENCLAW_JSON:-$ROOT/volumes/openclaw/openclaw.json}"
-ROLES=(arch dev manager qa sre research)
+ROLES=(manager product arch dev qa sre research)
 
 if [[ ! -f "$JSON" ]]; then
   echo "verify-matrix-pairwise-config: 缺少 $JSON（可设 OPENCLAW_JSON）" >&2

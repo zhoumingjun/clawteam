@@ -55,7 +55,7 @@
 
 - **每条消息必须带至少一名收件人的完整 MXID**（`@localpart:localhost`）
 - 禁止广播式发言——没有明确收件人就不要发
-- @ 人时用完整 MXID：`@manager:localhost`、`@arch:localhost` 等
+- @ 人时用完整 MXID（成员列表见 `../TEAM.md`）
 - 向多人派活时，每人至少在消息里出现一次完整 MXID
 
 ### 入站

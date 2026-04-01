@@ -90,7 +90,7 @@ import json, os, sys
 raw = json.load(sys.stdin)
 cut = int(os.environ['E2E_TRIG_TS'])
 srv = os.environ['E2E_MX_SRV']
-roles = ('arch', 'dev', 'manager', 'qa', 'sre', 'research')
+roles = ('manager', 'product', 'arch', 'dev', 'qa', 'sre', 'research')
 allowed = {'@' + r + ':' + srv for r in roles}
 need = {'@dev:' + srv, '@qa:' + srv}
 BAD = {'@q:' + srv, '@de:' + srv, '@arc:' + srv}

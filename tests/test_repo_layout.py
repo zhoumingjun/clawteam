@@ -9,13 +9,13 @@ import yaml
 
 
 def test_agent_workspace_files(project_root: Path) -> None:
-    agents = ("manager", "arch", "dev", "qa", "sre", "research")
+    agents = ("manager", "product", "arch", "dev", "qa", "sre", "research")
     for agent in agents:
         base = project_root / "config" / "agents" / agent
         for name in ("SOUL.md", "AGENTS.md", "HEARTBEAT.md", "IDENTITY.md", "BOOTSTRAP.md"):
             assert (base / name).is_file(), f"missing {agent}/{name}"
-    # 共享团队信息文件
-    assert (project_root / "config" / "agents" / "TEAM.md").is_file(), "missing shared TEAM.md"
+    # team.yaml 是团队名单的唯一数据源
+    assert (project_root / "config" / "agents" / "team.yaml").is_file(), "missing team.yaml"
 
 
 def test_git_history(project_root: Path) -> None:

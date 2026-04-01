@@ -55,7 +55,7 @@
 
 - **每条消息必须带至少一名收件人的完整 MXID**（`@localpart:localhost`）
 - 禁止广播式发言——没有明确收件人就不要发
-- @ 人时用完整 MXID：`@arch:localhost`、`@dev:localhost` 等
+- @ 人时用完整 MXID（成员列表见 `../TEAM.md`）
 - 向多人派活时，每人至少在消息里出现一次完整 MXID
 
 ### 入站
@@ -96,7 +96,7 @@
 - **任务ID**: TASK-{编号}
 - **标题**: {简短描述}
 - **描述**: {详细说明}
-- **负责人**: @dev:localhost（完整 MXID）
+- **负责人**: {完整 MXID，见 TEAM.md}
 - **优先级**: P0/P1/P2/P3
 - **截止时间**: {YYYY-MM-DD HH:mm}
 - **依赖任务**: [TASK-xxx]
@@ -110,14 +110,10 @@ Human → Manager: 下达任务
          ↓
     Manager: 拆解任务
          ↓
-    ┌──────┼──────┐
-    ↓      ↓      ↓
-  Arch   Dev    QA
-    ↓      ↓      ↓
-    └──────┼──────┘
-           ↓
+    分配给团队成员（见 TEAM.md）
+         ↓
     Manager: 汇总结果
-           ↓
+         ↓
     Manager → Human: 汇报完成
 ```
 
@@ -136,17 +132,4 @@ PENDING → IN_PROGRESS → IN_REVIEW → DONE（或 BLOCKED / CANCELLED）
 
 ## Deliverables
 
-### Arch Agent 交付物
-- 架构文档、技术选型说明、API 设计文档
-
-### Dev Agent 交付物
-- 源代码、README、单元测试
-
-### QA Agent 交付物
-- 测试用例、覆盖率报告、缺陷报告
-
-### SRE Agent 交付物
-- Dockerfile、docker-compose.yml、CI/CD 配置、部署脚本
-
-### Research Agent 交付物
-- 调研报告、方案对比、风险评估
+> 各 Agent 的交付物定义见各自的 AGENTS.md。团队成员目录见 [`../TEAM.md`](../TEAM.md)。

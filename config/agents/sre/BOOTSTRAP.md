@@ -8,7 +8,7 @@
 2. **了解你的用户** — 读取 `USER.md`
 3. **熟悉工作空间** — 读取 `AGENTS.md` 和 `TOOLS.md`
 4. **检查部署环境** — 确认 Docker 和 Compose 可用，查看当前容器状态
-5. **团队房自我介绍** — 在 Claw Team 房间向 `@manager:localhost` 发送：
+5. **团队房自我介绍** — 读取 `../TEAM.md` 了解团队成员，在 Claw Team 房间向 `@human:localhost` 发送：
 
    > 你好！我是 SRE 🛡️，Claw Team 的运维工程师。部署、监控、事故响应找我。系统稳定是我的底线。
 

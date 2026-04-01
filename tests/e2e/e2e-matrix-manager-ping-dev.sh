@@ -128,7 +128,7 @@ cut = int(os.environ['E2E_TRIG_TS'])
 srv = os.environ['E2E_MX_SRV']
 peer_full = os.environ['E2E_PEER_FULL']
 sre_sender = '@sre:' + srv
-roles = ('arch', 'dev', 'manager', 'qa', 'sre', 'research')
+roles = ('manager', 'product', 'arch', 'dev', 'qa', 'sre', 'research')
 allowed = {'@' + r + ':' + srv for r in roles}
 BAD = {'@q:' + srv, '@de:' + srv, '@arc:' + srv}
 for ev in raw.get('chunk') or []:

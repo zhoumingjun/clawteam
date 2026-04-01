@@ -3,11 +3,11 @@
 
 deploy_workspaces() {
   log_info "部署 workspace 模板..."
-  local entry agent_name source_dir target_dir
-  local spec="arch:arch dev:dev manager:manager qa:qa sre:sre research:research main:default"
-  for entry in $spec; do
-    agent_name="${entry%%:*}"
-    local dir_name="${entry##*:}"
+  local agent_name source_dir target_dir
+  # 固定映射: Gateway main → default 目录
+  for agent_name in main $AGENTS; do
+    local dir_name="$agent_name"
+    [ "$agent_name" = "main" ] && dir_name="default"
     source_dir="$OPENCLAW_SOURCE/$dir_name"
     target_dir="$OPENCLAW_ROOT/$dir_name"
     [ -d "$source_dir" ] || continue
@@ -17,10 +17,23 @@ deploy_workspaces() {
       log_info "已初始化 $dir_name"
     fi
   done
-  # 拷贝共享 TEAM.md 到运行时目录（仅首次）
+  # 拷贝 team.yaml 到运行时目录（每次启动都更新，确保与模板同步）
+  if [ -f "$OPENCLAW_SOURCE/team.yaml" ]; then
+    cp "$OPENCLAW_SOURCE/team.yaml" "$OPENCLAW_ROOT/team.yaml"
+    log_info "已同步 team.yaml"
+  fi
+  # 拷贝共享 TEAM.md 到运行时目录（仅首次；后续由 render-team-md.py 生成覆盖）
   if [ -f "$OPENCLAW_SOURCE/TEAM.md" ] && [ ! -f "$OPENCLAW_ROOT/TEAM.md" ]; then
     cp "$OPENCLAW_SOURCE/TEAM.md" "$OPENCLAW_ROOT/TEAM.md"
     log_info "已拷贝 TEAM.md"
+  fi
+}
+
+render_team_md() {
+  local render_py="${RENDER_TEAM_PY:-/app/openclaw/lib/render-team-md.py}"
+  if [ -f "$TEAM_YAML" ] && [ -f "$render_py" ]; then
+    python3 "$render_py" "$TEAM_YAML" "$MATRIX_SERVER_NAME" > "$OPENCLAW_ROOT/TEAM.md"
+    log_info "已从 team.yaml 渲染 TEAM.md"
   fi
 }
 
@@ -47,13 +60,12 @@ configure_matrix_channels() {
 
 register_openclaw_agents() {
   log_info "向 Gateway 注册 agents..."
-  local entry agent_name dir_name workspace_path agents_list errf err
+  local agent_name dir_name workspace_path agents_list errf err
   agents_list="$(openclaw agents list 2>/dev/null || true)"
   errf="$(mktemp)"
-  local spec="main:default arch:arch dev:dev manager:manager qa:qa sre:sre research:research"
-  for entry in $spec; do
-    agent_name="${entry%%:*}"
-    dir_name="${entry##*:}"
+  for agent_name in main $AGENTS; do
+    dir_name="$agent_name"
+    [ "$agent_name" = "main" ] && dir_name="default"
     workspace_path="$OPENCLAW_ROOT/$dir_name"
     [ -d "$workspace_path" ] || continue
     if echo "$agents_list" | grep -qE "(^|[[:space:];,])${agent_name}([[:space:];,]|$)"; then

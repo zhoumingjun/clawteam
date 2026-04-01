@@ -36,7 +36,7 @@ const roomId = process.env.OC_ROOM_ID || '';
 const homeserver = process.env.OC_HOMESERVER;
 const server = process.env.OC_SERVER_NAME || 'localhost';
 const out = process.env.OC_OUT;
-const ROLES = ['arch', 'dev', 'manager', 'qa', 'sre', 'research'];
+const ROLES = JSON.parse(process.env.OC_ROLES || '[]');
 const apiKey = process.env.ANTHROPIC_API_KEY || '';
 const model = process.env.MODEL_NAME || 'claude-sonnet-4-20250514';
 const baseUrl = (process.env.ANTHROPIC_BASE_URL || '').trim();
@@ -165,7 +165,7 @@ patch_bindings_if_room() {
   fi
   node -e "
 const fs = require('fs');
-const ROLES = ['arch','dev','manager','qa','sre','research'];
+const ROLES = JSON.parse(process.env.OC_ROLES || '[]');
 const f = process.argv[1];
 const roomId = process.argv[2] || '';
 const homeserver = process.argv[3];

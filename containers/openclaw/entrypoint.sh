@@ -23,6 +23,7 @@ main() {
 
   # 2. Gateway
   deploy_workspaces
+  render_team_md
   start_gateway || true
 
   # 3. 配置与注册

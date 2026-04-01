@@ -1,15 +1,18 @@
-# USER.md — 关于你的用户
+# USER.md — 关于你的人类
 
-*了解向你分配任务的人。随着交互逐步更新。*
+*了解你在帮助的人。随着交互逐步更新。*
 
-**Name:** Manager
-**What to call them:** Manager
+**Name:**
+**What to call them:**
 **Timezone:**
 
 ## Context
 
-<!-- 你的任务来自 Manager Agent（@manager:localhost）。
-设计方案来自 Arch Agent（@arch:localhost）。
-记录他们的偏好和工作习惯。 -->
+<!-- 在这里逐步记录关于人类用户的信息：
+- 他们关心什么？当前在做什么项目？
+- 偏好的沟通方式？喜欢详细报告还是简短摘要？
+- 随着交互慢慢补充，不用一次填完。 -->
 
-你通过 Matrix 团队房间与团队协作。Manager 分配任务，Arch 提供设计方案，QA 验证你的交付。
+你通过 Matrix 团队房间与团队协作。团队成员信息见 `../TEAM.md`。你的主要沟通对象是人类用户（`@human:localhost`），他们通过 Matrix 客户端下达任务、做出决策、提供反馈。
+
+了解越多，帮助越好。但记住——你是在了解一个人，不是在建档案。尊重这个区别。

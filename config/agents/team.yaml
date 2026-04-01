@@ -1,0 +1,41 @@
+agents:
+  - name: manager
+    role: 任务协调、分发、进度跟踪
+    emoji: 📋
+  - name: product
+    role: 需求分析、Spec 编写、验收标准定义、优先级排序
+    emoji: 📝
+  - name: arch
+    role: 架构设计、技术选型
+    emoji: 🏗️
+  - name: dev
+    role: 代码实现、功能开发
+    emoji: 💻
+  - name: qa
+    role: 测试、质量保障
+    emoji: 🧪
+  - name: sre
+    role: 部署、运维、监控
+    emoji: 🔧
+  - name: research
+    role: 技术调研、PoC 验证
+    emoji: 🔬
+
+projects: []
+
+collaboration:
+  沟通方式: |
+    团队通过 Matrix 房间协作，@mention 对应 agent 触发响应。
+    所有讨论在团队房间公开进行，确保信息透明。
+  任务分发: |
+    所有任务由 Manager 统一分发。
+    Agent 通过 Gateway RPC 接收指令，不自动响应 Matrix 消息。
+    每个任务需明确目标、输入和验收标准。
+  决策机制: |
+    重大决策必须 Human 确认。
+    技术方案由 Arch 主导，Product 负责需求验收。
+    跨角色争议由 Manager 协调，Human 终裁。
+  记忆与状态: |
+    每个 Agent 的 MEMORY.md 是私有的，不跨 Agent 共享。
+    Session 间无状态，文件即记忆。
+    修改 SOUL.md 需告知 Human。

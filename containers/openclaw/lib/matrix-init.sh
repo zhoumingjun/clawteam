@@ -18,15 +18,7 @@ wait_for_homeserver() {
 
 agent_env_password_var() {
   local a="$1"
-  case "$a" in
-    arch) echo "ARCH_PASSWORD" ;;
-    dev) echo "DEV_PASSWORD" ;;
-    manager) echo "MANAGER_PASSWORD" ;;
-    qa) echo "QA_PASSWORD" ;;
-    sre) echo "SRE_PASSWORD" ;;
-    research) echo "RESEARCH_PASSWORD" ;;
-    *) echo "" ;;
-  esac
+  echo "${a}" | tr 'a-z-' 'A-Z_' | sed 's/$/_PASSWORD/'
 }
 
 ensure_passwords() {
@@ -98,7 +90,8 @@ save_agent_token() {
 bootstrap_matrix_accounts() {
   ensure_human_password
   log_info "注册/登录 Human @${HUMAN_USERNAME}:${MATRIX_SERVER_NAME}..."
-  matrix_register_or_login "$HUMAN_USERNAME" "$HUMAN_PASSWORD" >/dev/null || true
+  HUMAN_TOKEN="$(matrix_register_or_login "$HUMAN_USERNAME" "$HUMAN_PASSWORD" || true)"
+  export HUMAN_TOKEN
 
   log_info "注册/登录 Agent 账号..."
   local line user pass tok any=""
@@ -137,15 +130,14 @@ create_team_room_if_needed() {
     log_info "使用已有团队房间: $MATRIX_ROOM_ID"
     return 0
   fi
-  local mgr_tok
-  mgr_tok="$(awk -F= '$1=="manager" {print $2; exit}' "$TOKENS_FILE" 2>/dev/null || true)"
-  if [ -z "$mgr_tok" ]; then
-    log_warn "无 manager token，跳过自动建群（可稍后设置 MATRIX_ROOM_ID）"
+  local creator_tok="${HUMAN_TOKEN:-}"
+  if [ -z "$creator_tok" ]; then
+    log_warn "无 Human token，跳过自动建群（可稍后设置 MATRIX_ROOM_ID）"
     return 0
   fi
   local resp rid
   resp="$(curl -sf -X POST "${MATRIX_HOMESERVER_URL}/_matrix/client/v3/createRoom" \
-    -H "Authorization: Bearer ${mgr_tok}" \
+    -H "Authorization: Bearer ${creator_tok}" \
     -H "Content-Type: application/json" \
     -d "$(
       node -e "console.log(JSON.stringify({name:process.argv[1],preset:'public_chat',initial_state:[{type:'m.room.history_visibility',content:{history_visibility:'world_readable'}}],room_version:'11'}))" \
@@ -187,21 +179,19 @@ matrix_invite_localpart() {
 invite_all_team_members() {
   load_or_assign_room_id
   [ -n "${MATRIX_ROOM_ID:-}" ] || return 0
-  local mgr_tok
-  mgr_tok="$(awk -F= '$1=="manager" {print $2; exit}' "$TOKENS_FILE" 2>/dev/null || true)"
-  if [ -z "$mgr_tok" ]; then
-    log_warn "无 manager token，无法自动邀请成员进群"
+  local inviter_tok="${HUMAN_TOKEN:-}"
+  if [ -z "$inviter_tok" ]; then
+    log_warn "无 Human token，无法自动邀请成员进群"
     return 0
   fi
   if [ -f "$INVITES_DONE_FILE" ] && grep -qxF "$MATRIX_ROOM_ID" "$INVITES_DONE_FILE" 2>/dev/null; then
     log_info "团队房间成员已邀请过（$MATRIX_ROOM_ID），跳过"
     return 0
   fi
-  log_info "邀请 Human 与各 Agent 进入团队房间..."
-  matrix_invite_localpart "$mgr_tok" "$MATRIX_ROOM_ID" "$HUMAN_USERNAME" || true
+  log_info "邀请各 Agent 进入团队房间..."
   local a
   for a in $AGENTS; do
-    matrix_invite_localpart "$mgr_tok" "$MATRIX_ROOM_ID" "$a" || true
+    matrix_invite_localpart "$inviter_tok" "$MATRIX_ROOM_ID" "$a" || true
   done
   printf '%s\n' "$MATRIX_ROOM_ID" >"$INVITES_DONE_FILE"
   log_info "团队房间邀请完成"

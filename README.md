@@ -2,7 +2,7 @@
 
 **开箱即用的 AI 软件研发工厂**
 
-多个专业化 Agent（Manager、Arch、Dev、QA、SRE、Research）通过 **Matrix（[Tuwunel](https://github.com/matrix-construct/tuwunel)）** 协作，运行时由 **OpenClaw Gateway** 统一管理。
+多个专业化 Agent（Manager、Product、Arch、Dev、QA、SRE、Research）通过 **Matrix（[Tuwunel](https://github.com/matrix-construct/tuwunel)）** 协作，运行时由 **OpenClaw Gateway** 统一管理。Agent 名单由 `config/agents/team.yaml` 统一定义，增删角色只需编辑该文件并新建/删除对应目录。
 
 ## 快速开始
 
@@ -61,9 +61,12 @@ docker compose -f containers/docker-compose.yml --env-file .env logs -f openclaw
 
 ## Agent 角色
 
+> 完整名单见 [`config/agents/team.yaml`](config/agents/team.yaml)
+
 | Agent | 职责 |
 |-------|------|
 | **Manager** | 任务协调、项目管理 |
+| **Product** | 需求分析、Spec 编写、验收标准 |
 | **Arch** | 架构设计 |
 | **Dev** | 开发 |
 | **QA** | 测试 |
